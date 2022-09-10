@@ -1,0 +1,6 @@
+# ignore node modules. Run npm install to get all the dependencies
+node_modules
+data
+samples
+src
+tests
