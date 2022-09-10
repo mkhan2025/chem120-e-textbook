@@ -16,7 +16,31 @@
         npm install
         
 ## Contribution
+(replace anything with the `<>` with your own content)
 
+1. Make any changes in the code on the `master` branch
+
+2. Create a new branch. If the changes associate with a specific `issue`, name the branch after the number of the issue.
+
+        git checkout -b <branch_name>
+
+3. Pull all the updates from upstream before commit new changes
+
+        git stash
+        git fetch origin
+        git rebase origin/master
+
+4. Add, commit, and push the changes
+
+        git stash apply
+        
+Might need to resolve merge conflicts. Follow the instruction on the terminal.
+
+        git add .
+        git commit -m "<a short description of the changes>"
+        git push origin/<branch_name>
+
+5. Make a Pull Request (PR) on GitHub.
 
 ## Acknowledgement
 
