@@ -18,7 +18,7 @@
 ## Contribution
 (replace anything with the `<>` with your own content)
 
-1. Make any changes in the code on the `master` branch
+1. Before making any changes run `git pull`. The make changes in the code on the `master` branch
 
 2. Create a new branch. If the changes associate with a specific `issue`, name the branch after the number of the issue.
 
