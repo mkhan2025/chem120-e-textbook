@@ -44,4 +44,4 @@ Might need to resolve merge conflicts. Follow the instruction on the terminal.
 
 ## Acknowledgement
 
-If you use ChemDoodle Web Components in your website or product, we request that you provide a link on your site to web.ChemDoodle.com and/or www.ChemDoodle.com. When using the SketcherCanvas or EditorCanvas3D components, you are not allowed to remove any of our links or logos.
+This project uses ChemDoodle Web Components. The link to [web.ChemDoodle.com](web.ChemDoodle.com) and/or [www.ChemDoodle.com](www.ChemDoodle.com).
