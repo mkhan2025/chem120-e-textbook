@@ -1,7 +1,10 @@
-from rdkit.Chem.rdmolfiles import MolFromMolFile as rdMol
+from rdkit.Chem.rdmolfiles import MolFromMolFile, MolToSmiles
 
 
-test = "Molecule from ChemDoodle Web Components\n\nhttp://www.ichemlabs.com\n  2  1  0  0  0  0            999 V2000\n   -0.5000    0"
+m1 = MolFromMolFile('test1.mol')
+m2 = MolFromMolFile('test2.mol')
 
-m = rdMol('test1.mol')
-print(m)
+smileStr1 = MolToSmiles(m1)
+smileStr2 = MolToSmiles(m2)
+
+print(smileStr1, smileStr2, smileStr1==smileStr2)
