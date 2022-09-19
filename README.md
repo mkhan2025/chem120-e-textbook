@@ -1,7 +1,7 @@
 # CHEM 120 E-Textbook
 
 ## Setting up
-1. Install `Homebrew` and use it to install `npm` and `nvm`.
+1. Install `Homebrew` and use it to install `npm` and `nvm`. (For MacOS)
 2. Add the [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) extension to `Visual Studio Code` for debugging.
 
 3. Set up the SSH key on your computer
