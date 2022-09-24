@@ -6,22 +6,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel=¨stylesheet¨ type=¨text/css¨ href=¨./install/ChemDoodleWeb.css¨>
     <link rel=¨stylesheet¨ type=¨text/css¨ href=¨./install/uis/jquery-ui-1.11.4.css¨>
-    <link href="./index.css" rel="stylesheet">
-    <title>Document</title>
+    <link href="./css/index.css" rel="stylesheet">
+    <title>Chem 120</title>
 </head>
 <body>
-    <h1>Build the molecules</h1>
-    <h2>Instruction</h2>
-    <p>Hover over the icons on top of the canvas to see their functionality</p>
+    <div id="header">
+        <h1>Build the molecules</h1>
+        <h2>Instruction</h2>
+        <p>Hover over the icons on top of the canvas to see their functionality</p>
+        <h3>Current level: 1</h3>
+        <p>Draw all the isomers of C2H6O</p>
+    </div>
     <div id="game-space">
         <canvas id="sketcher">Sketcher canvas</canvas>
         <span id="commnad">
-            <button id="check-result">Check result</button>   
+            <button id="check-single">Check molecule</button>
+            <button id="check-level">Check level</button>
         </span>
     </div>
 
 </body>
 <script src="./install/ChemDoodleWeb.js" type="text/javascript"></script>
 <script src="./install/uis/ChemDoodleWeb-uis.js" type="text/javascript"></script>
-<script src="index.js"></script>
+<script src="./js/index.js" type="text/javascript"></script>
 </html>
