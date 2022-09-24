@@ -3,9 +3,12 @@ var correctAns = []
 var timeLeft = 0
 var score = 0
 
+// const  endPoint = "http://127.0.0.1:33507"
 const endPoint = "https://chem120.herokuapp.com"
 const correctMessage = "Correct answer"
 const wrongMessage = "Incorrect or duplicated answer"
+const levelClear = `You cleared level ${level+1}. Good job!`
+const levelIncomplete = "You haven't found all isomers. Keep going!"
 
 // Initiate the canvas
 const options = {
@@ -85,7 +88,6 @@ checkOneMolButton.addEventListener("click", () => {
     
             console.log(response)
     
-            // TODO: Handle the correct/incorrect message
             if (correct && notDup) alert(correctMessage)
             else alert(wrongMessage)
         })
@@ -120,6 +122,29 @@ const getMolBlockStr = (canvas) => {
 // button to check the result of the whole level
 const checkLevelButton = document.getElementById('check-level')
 checkLevelButton.addEventListener("click", () => {
-    console.log('test')
+    postData(
+        url=endPoint+"/game_input", 
+        data={
+            'molBlock' : "",
+            'level' : level,
+            'correctAns' : correctAns
+        }
+    ).then((data) => {
+        console.log(data)
+
+        getData(
+            url=endPoint+"/level_result"
+        ).then((response) => {
+            foundAll = response['foundAll']
+    
+            console.log(response)
+    
+            if (foundAll) alert(levelClear)
+            else alert(levelIncomplete)
+        })
+
+    }).catch((e) => {
+        console.log(e)
+    });
 })
 
