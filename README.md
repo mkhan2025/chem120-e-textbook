@@ -26,8 +26,8 @@
 3. Pull all the updates from upstream before commit new changes
 
         git stash
-        git fetch origin
-        git rebase origin/master
+        git fetch upstream
+        git rebase upstream/master
 
 4. Add, commit, and push the changes
 
