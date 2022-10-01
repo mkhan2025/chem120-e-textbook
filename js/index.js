@@ -4,7 +4,8 @@ var timeLeft = 0
 var score = 0
 
 // const  endPoint = "http://127.0.0.1:33507"
-const endPoint = "https://chem120.herokuapp.com"
+// const endPoint = "https://chem120.herokuapp.com"
+const endPoint = "https://chem120-game.up.railway.app/"
 const correctMessage = "Correct answer"
 const wrongMessage = "Incorrect or duplicated answer"
 const levelClear = `You cleared level ${level+1}. Good job!`
