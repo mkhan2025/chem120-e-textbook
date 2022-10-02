@@ -2,11 +2,15 @@ const levels = import("js/levels.js")
 
 
 
-
+// game-wise variables
 var level = 0
-var correctAns = []
+var totalScore = 0
+
+//level-wise variables
 var timeLeft = 0
-var score = 0
+var correctAns = []
+var levelScore = 0
+
 
 // const  endPoint = "http://127.0.0.1:33507"
 // const endPoint = "https://chem120.herokuapp.com"
@@ -42,8 +46,22 @@ sketcher.repaint();
  */
 const levelChange = () => {
     document.getElementById("level-header").textContent = `Current level: ${level+1}`
-    document.getElementById('level-content').textContent = `Draw all the isomers of ${levels[level]}`
+    document.getElementById('level-content').textContent = `Draw all the isomers of ${levels[level].name}`
 }
+
+
+const resetLevel = () => {
+    timeLeft = 0
+    correctAns.length = 0
+    levelScore = 0
+}
+
+
+const resetGame = () => {
+    level = 0
+    totalScore = 0
+    resetLevel()
+};
 
 
 // functions to communicate with the backend code
@@ -165,11 +183,13 @@ checkLevelButton.addEventListener("click", () => {
                 alert(gameClear)
                 level = 0
                 levelChange()
+                resetGame()
             }
             else if (foundAll) {
                 alert(levelClear)
                 level++
                 levelChange()
+                resetLevel()
             }
             else alert(levelIncomplete)
         })
