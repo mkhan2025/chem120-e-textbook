@@ -18,9 +18,10 @@ const endPoint = "https://chem120-game.up.railway.app/"
 const correctMessage = "Correct answer"
 const wrongMessage = "Incorrect answer"
 const dupMessage = "Duplicated answer"
-const levelClear = `You cleared level ${level+1}. Good job!`
 const levelIncomplete = "You haven't found all isomers. Keep going!"
 const gameClear = "You cleared all level. Restart?"
+const levelClear = () => `You cleared level ${level+1}. Good job!`
+
 
 // Initiate the canvas
 const options = {
@@ -56,7 +57,6 @@ const resetLevel = () => {
     levelScore = 0
 }
 
-
 const resetGame = () => {
     level = 0
     totalScore = 0
@@ -66,7 +66,7 @@ const resetGame = () => {
 
 // functions to communicate with the backend code
 async function postData(url = "", data = {}) {
-    const response = await fetch(url, {
+    await fetch(url, {
         method: 'POST',
         mode: 'cors',
         cache: 'no-cache',
@@ -120,7 +120,6 @@ checkOneMolButton.addEventListener("click", () => {
         ).then((response) => {
             correct = response['correct']
             notDup = response['notDup']
-            console.log(notDup)
             correctAns = response['correctAns']
     
             console.log(response)
@@ -132,11 +131,7 @@ checkOneMolButton.addEventListener("click", () => {
             else alert(wrongMessage)
         })
 
-    }).catch((e) => {
-        console.log(e)
-    });
-
-    
+    }).catch((e) => { console.log(e) });
 });
 
 /**
@@ -145,8 +140,7 @@ checkOneMolButton.addEventListener("click", () => {
  * @returns {array}
  */
 const getStructure = (canvas) => {
-    const mol = canvas.getMolecule()
-    return mol.atoms
+    return canvas.getMolecule().atoms
 } 
 
 /**
@@ -155,8 +149,7 @@ const getStructure = (canvas) => {
  * @returns {string}
  */
 const getMolBlockStr = (canvas) => {
-    const mol = canvas.getMolecule()
-    return ChemDoodle.writeMOL(mol)
+    return ChemDoodle.writeMOL(canvas.getMolecule())
 }
 
 // button to check the result of the whole level
@@ -186,7 +179,7 @@ checkLevelButton.addEventListener("click", () => {
                     levelChange()
                     resetGame()
                 } else {
-                    alert(levelClear)
+                    alert(levelClear())
                     level++
                     resetLevel()
                     levelChange()
@@ -194,8 +187,5 @@ checkLevelButton.addEventListener("click", () => {
             } else alert(levelIncomplete)
         })
 
-    }).catch((e) => {
-        console.log(e)
-    });
-})
-
+    }).catch((e) => { console.log(e) });
+});
