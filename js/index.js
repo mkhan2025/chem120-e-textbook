@@ -179,19 +179,19 @@ checkLevelButton.addEventListener("click", () => {
     
             console.log(response)
     
-            if (foundAll && level==7) {
-                alert(gameClear)
-                level = 0
-                levelChange()
-                resetGame()
-            }
-            else if (foundAll) {
-                alert(levelClear)
-                level++
-                levelChange()
-                resetLevel()
-            }
-            else alert(levelIncomplete)
+            if (foundAll) {
+                if (level == 7) {
+                    alert(gameClear)
+                    level = 0
+                    levelChange()
+                    resetGame()
+                } else {
+                    alert(levelClear)
+                    level++
+                    resetLevel()
+                    levelChange()
+                }
+            } else alert(levelIncomplete)
         })
 
     }).catch((e) => {
