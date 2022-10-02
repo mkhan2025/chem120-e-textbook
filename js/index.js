@@ -7,7 +7,7 @@ var level = 0
 var totalScore = 0
 
 //level-wise variables
-var timeLeft = 0
+var timeCounter = 0
 var correctAns = []
 var levelScore = 0
 
@@ -175,7 +175,6 @@ checkLevelButton.addEventListener("click", () => {
             if (foundAll) {
                 if (level == 7) {
                     alert(gameClear)
-                    level = 0
                     levelChange()
                     resetGame()
                 } else {
@@ -189,3 +188,21 @@ checkLevelButton.addEventListener("click", () => {
 
     }).catch((e) => { console.log(e) });
 });
+
+
+const startTimeButton = document.getElementById('start-time')
+var counter
+startTimeButton.addEventListener('click', () => {
+    function pad ( value ) { return value > 9 ? value : "0" + value; }
+    counter = setInterval( () => {
+        seconds = pad(++timeCounter%60)
+        document.getElementById("timer-display").textContent = `0:${pad(parseInt(timeCounter/60,10))}:${seconds}`
+    }, 1000);
+})
+
+const stopTimeButton = document.getElementById('stop-time')
+stopTimeButton.addEventListener("click", () => {
+    clearInterval(counter)
+    console.log(timeCounter)
+    // TODO: extract the time counted to calculate bonus scores
+})
