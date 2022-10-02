@@ -1,3 +1,16 @@
+
+
+const levels = [
+    "C2H60",
+    "C3H8O",
+    "C4H9Cl",
+    "C4H10O",
+    "C4H8",
+    "C4H7Cl",
+    "C5H10",
+    "C5H10O, containing a carbonyl group"
+];
+
 var level = 0
 var correctAns = []
 var timeLeft = 0
@@ -7,9 +20,11 @@ var score = 0
 // const endPoint = "https://chem120.herokuapp.com"
 const endPoint = "https://chem120-game.up.railway.app/"
 const correctMessage = "Correct answer"
-const wrongMessage = "Incorrect or duplicated answer"
+const wrongMessage = "Incorrect answer"
+const dupMessage = "Duplicated answer"
 const levelClear = `You cleared level ${level+1}. Good job!`
 const levelIncomplete = "You haven't found all isomers. Keep going!"
+const gameClear = "You cleared all level. Restart?"
 
 // Initiate the canvas
 const options = {
@@ -28,6 +43,16 @@ sketcher.styles.atoms_useJMOLColors = true;
 sketcher.styles.bonds_clearOverlaps_2D = true;
 sketcher.styles.shapes_color = 'c10000';
 sketcher.repaint();
+
+
+/**
+ * Change the level information shown to the players.
+ */
+const levelChange = () => {
+    document.getElementById("level-header").textContent = `Current level: ${level+1}`
+    document.getElementById('level-content').textContent = `Draw all the isomers of ${levels[level]}`
+}
+
 
 // functions to communicate with the backend code
 async function postData(url = "", data = {}) {
@@ -85,11 +110,16 @@ checkOneMolButton.addEventListener("click", () => {
         ).then((response) => {
             correct = response['correct']
             notDup = response['notDup']
+            console.log(notDup)
             correctAns = response['correctAns']
     
             console.log(response)
     
-            if (correct && notDup) alert(correctMessage)
+            if (correct && notDup) {
+                alert(correctMessage)
+                sketcher.repaint()
+            }
+            else if (!notDup) alert(dupMessage)
             else alert(wrongMessage)
         })
 
@@ -140,7 +170,16 @@ checkLevelButton.addEventListener("click", () => {
     
             console.log(response)
     
-            if (foundAll) alert(levelClear)
+            if (foundAll && level==7) {
+                alert(gameClear)
+                level = 0
+                levelChange()
+            }
+            else if (foundAll) {
+                alert(levelClear)
+                level++
+                levelChange()
+            }
             else alert(levelIncomplete)
         })
 
