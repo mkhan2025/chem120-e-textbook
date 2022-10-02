@@ -1,15 +1,7 @@
+const levels = import("js/levels.js")
 
 
-const levels = [
-    "C2H60",
-    "C3H8O",
-    "C4H9Cl",
-    "C4H10O",
-    "C4H8",
-    "C4H7Cl",
-    "C5H10",
-    "C5H10O, containing a carbonyl group"
-];
+
 
 var level = 0
 var correctAns = []
@@ -117,7 +109,6 @@ checkOneMolButton.addEventListener("click", () => {
     
             if (correct && notDup) {
                 alert(correctMessage)
-                sketcher.repaint()
             }
             else if (!notDup) alert(dupMessage)
             else alert(wrongMessage)
