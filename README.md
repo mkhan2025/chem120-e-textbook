@@ -46,4 +46,4 @@ Might need to resolve merge conflicts. Follow the instruction on the terminal.
 
 ## Acknowledgement
 - This project uses ChemDoodle Web Components. The link to [web.ChemDoodle.com](web.ChemDoodle.com) and/or [www.ChemDoodle.com](www.ChemDoodle.com).
-- Thank you Dr. Jeff Hansen, Professor of Chemistry and Biochemistry at DePauw University, for designing for the introductory Chemistry courses.
+- Thank you Dr. Jeff Hansen, Professor of Chemistry and Biochemistry at DePauw University, for designing the game for the introductory Chemistry courses.
