@@ -1,5 +1,8 @@
 # CHEM 120 E-Textbook
 
+## About
+The project contains a game to quiz about the understanding of isomers in organic chemistry for students of CHEM 120 at DePauw University.
+
 ## Setting up
 1. Install `Homebrew` and use it to install `npm` and `nvm`. (For MacOS)
 2. Add the [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) extension to `Visual Studio Code` for debugging.
@@ -42,5 +45,5 @@ Might need to resolve merge conflicts. Follow the instruction on the terminal.
 5. Make a Pull Request (PR) on GitHub.
 
 ## Acknowledgement
-
-This project uses ChemDoodle Web Components. The link to [web.ChemDoodle.com](web.ChemDoodle.com) and/or [www.ChemDoodle.com](www.ChemDoodle.com).
+- This project uses ChemDoodle Web Components. The link to [web.ChemDoodle.com](web.ChemDoodle.com) and/or [www.ChemDoodle.com](www.ChemDoodle.com).
+- Thank you Dr. Jeff Hansen, Professor of Chemistry and Biochemistry at DePauw University, for designing for the introductory Chemistry courses.
