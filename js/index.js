@@ -1,8 +1,18 @@
-const levels = import("js/levels.js")
-
+// const levels = import("./levels.js")
+const levels = [
+    {name: "C2H60",maxTime: 0.0,molScore: 10,},
+    {name: "C3H8O",maxTime: 0.0,molScore: 10,},
+    {name: "C4H9Cl",maxTime: 0.0,molScore: 10,},
+    {name: "C4H10O",maxTime: 0.0,molScore: 6,},
+    {name: "C4H8",maxTime: 0.0,molScore: 15,},
+    {name: "C4H7Cl",maxTime: 0.0,molScore: 7,},
+    {name: "C5H10",maxTime: 0.0,molScore: 10,},
+    {name: "C5H10O, containing a carbonyl group",maxTime: 0.0,molScore: 10,},
+  ];
 
 
 // game-wise variables
+const bonusRate = 5
 var level = 0
 var totalScore = 0
 
@@ -13,7 +23,6 @@ var levelScore = 0
 
 
 // const  endPoint = "http://127.0.0.1:33507"
-// const endPoint = "https://chem120.herokuapp.com"
 const endPoint = "https://chem120-game.up.railway.app/"
 const correctMessage = "Correct answer"
 const wrongMessage = "Incorrect answer"
@@ -62,6 +71,42 @@ const resetGame = () => {
     totalScore = 0
     resetLevel()
 };
+
+const startTimeButton = document.getElementById('start-time')
+var counter
+startTimeButton.addEventListener('click', () => {
+    function pad ( value ) { return value > 9 ? value : "0" + value; }
+    counter = setInterval( () => {
+        seconds = pad(++timeCounter%60)
+        document.getElementById("timer-display").textContent = `0:${pad(parseInt(timeCounter/60,10))}:${seconds}`
+    }, 1000);
+});
+
+
+const setViewCanvas = (viewCanvas, molBlock) => {
+    viewCanvas.styles.bonds_width_2D = .6;
+    viewCanvas.styles.bonds_saturationWidthAbs_2D = 2.6;
+    viewCanvas.styles.bonds_hashSpacing_2D = 2.5;
+    viewCanvas.styles.atoms_font_size_2D = 10;
+    viewCanvas.styles.atoms_font_families_2D = ['Helvetica', 'Arial', 'sans-serif'];
+    viewCanvas.styles.atoms_displayTerminalCarbonLabels_2D = true;
+    let mol = ChemDoodle.readMOL(molBlock)
+    mol.scaleToAverageBondLength(14.4);
+    viewCanvas.loadMolecule(mol)
+}
+
+const displayCorrectAns = (molBlock) => {
+    molLs = document.getElementById('duplicates')
+    const li = document.createElement('li')
+    const canvas = document.createElement('canvas')
+    li.appendChild(canvas)
+    molLs.appendChild(li)
+
+    const canvasId = `canvas${correctAns.length}`
+    canvas.setAttribute('id', canvasId)
+    const viewCanvas = new ChemDoodle.ViewerCanvas(canvasId, 100, 100)
+    setViewCanvas(viewCanvas, molBlock)
+}
 
 
 // functions to communicate with the backend code
@@ -125,6 +170,9 @@ checkOneMolButton.addEventListener("click", () => {
             console.log(response)
     
             if (correct && notDup) {
+                levelScore += levels[level].molScore
+                document.getElementById('level-score').textContent = `Level Score: ${levelScore}`
+                displayCorrectAns(data['molBlock'])
                 alert(correctMessage)
             }
             else if (!notDup) alert(dupMessage)
@@ -173,6 +221,17 @@ checkLevelButton.addEventListener("click", () => {
             console.log(response)
     
             if (foundAll) {
+                clearInterval(counter)
+                console.log(timeCounter)
+                // assuming that for every 10 seconds early, add 5 points
+                levelScore += timeCounter%10 * bonusRate
+                totalScore += levelScore
+                document.getElementById('total-score').textContent = `Total Score: ${totalScore}`
+
+                timeCounter = 0
+                const molLs = document.getElementById('duplicates')
+                molLs.innerHTML = ''
+
                 if (level == 7) {
                     alert(gameClear)
                     levelChange()
@@ -183,26 +242,10 @@ checkLevelButton.addEventListener("click", () => {
                     resetLevel()
                     levelChange()
                 }
+                
+
             } else alert(levelIncomplete)
         })
 
     }).catch((e) => { console.log(e) });
 });
-
-
-const startTimeButton = document.getElementById('start-time')
-var counter
-startTimeButton.addEventListener('click', () => {
-    function pad ( value ) { return value > 9 ? value : "0" + value; }
-    counter = setInterval( () => {
-        seconds = pad(++timeCounter%60)
-        document.getElementById("timer-display").textContent = `0:${pad(parseInt(timeCounter/60,10))}:${seconds}`
-    }, 1000);
-})
-
-const stopTimeButton = document.getElementById('stop-time')
-stopTimeButton.addEventListener("click", () => {
-    clearInterval(counter)
-    console.log(timeCounter)
-    // TODO: extract the time counted to calculate bonus scores
-})
