@@ -1,3 +1,9 @@
 @import '../node_modules/vanilla-framework/';
 @include vf-base;
 
+
+#game-space {
+    margin:auto;
+    max-width: 550px;
+}
+
