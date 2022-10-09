@@ -1,18 +1,7 @@
+import levels from './levels.js'
+
 // const levels = import("./levels.js")
-const levels = [
-	{ name: "C2H60", maxTime: 0.0, molScore: 100 },
-	{ name: "C3H8O", maxTime: 0.0, molScore: 100 },
-	{ name: "C4H9Cl", maxTime: 0.0, molScore: 100 },
-	{ name: "C4H10O", maxTime: 0.0, molScore: 60 },
-	{ name: "C4H8", maxTime: 0.0, molScore: 150 },
-	{ name: "C4H7Cl", maxTime: 0.0, molScore: 70 },
-	{ name: "C5H10", maxTime: 0.0, molScore: 100 },
-	{
-		name: "C5H10O, containing a carbonyl group",
-		maxTime: 0.0,
-		molScore: 100,
-	},
-];
+
 
 // game-wise variables
 const bonusRate = 10;
@@ -39,7 +28,7 @@ const levelClear = () => `You cleared level ${level + 1}. Good job!`;
 const options = {
 	useService: true,
 	oneMolecule: true,
-	// isMobile: true
+	// isMobile: true,
 };
 
 // Set up the ChemDoodle SketcherCanvas component
@@ -53,6 +42,14 @@ sketcher.styles.bonds_clearOverlaps_2D = true;
 sketcher.styles.shapes_color = "c10000";
 sketcher.repaint();
 
+// console.log(ChemDoodle.uis.gui.desktop.ToolbarManager(sketcher))
+
+
+const clearCanvasButton = document.getElementById("clear-canvas");
+clearCanvasButton.addEventListener("click", () => {
+	ChemDoodle.uis.actions.ClearAction(sketcher);
+});
+
 /**
  * Change the level information shown to the players.
  */
@@ -64,12 +61,18 @@ const levelChange = () => {
 		"level-content"
 	).textContent = `Draw all the isomers of ${levels[level].name}`;
 
+    document.getElementById(
+        "level-score"
+    ).textContent = `Level Score: ${levelScore}`;
+    document.getElementById('total-score').textContent = `Total score: ${totalScore}`
+
 	document.getElementById("timer-display").textContent = "0:00:00";
 	timeCounter = 0;
 
 	const molLs = document.getElementById("duplicates");
 	molLs.innerHTML = "";
 };
+levelChange();
 
 const resetLevel = () => {
 	timeLeft = 0;
@@ -97,24 +100,24 @@ startTimeButton.addEventListener("click", () => {
 	}, 1000);
 });
 
-const setViewCanvas = (viewCanvas, molBlock, transform=false) => {
-    if (transform) {
-        viewCanvas.styles.set3DRepresentation('Ball and Stick');
-        viewCanvas.styles.backgroundColor = 'black';
-    } else {
-        viewCanvas.styles.bonds_width_2D = 0.6;
-        viewCanvas.styles.bonds_saturationWidthAbs_2D = 2.6;
-        viewCanvas.styles.bonds_hashSpacing_2D = 2.5;
-        viewCanvas.styles.atoms_font_size_2D = 10;
-        viewCanvas.styles.atoms_font_families_2D = [
-            "Helvetica",
-            "Arial",
-            "sans-serif",
-        ];
-        viewCanvas.styles.atoms_displayTerminalCarbonLabels_2D = true;
-        // viewCanvas.styles.backgroundColor = 'grey';
-    }
-	let mol = ChemDoodle.readMOL(molBlock, transform?1.5:null);
+const setViewCanvas = (viewCanvas, molBlock, transform = false) => {
+	if (transform) {
+		viewCanvas.styles.set3DRepresentation("Ball and Stick");
+		viewCanvas.styles.backgroundColor = "black";
+	} else {
+		viewCanvas.styles.bonds_width_2D = 0.6;
+		viewCanvas.styles.bonds_saturationWidthAbs_2D = 2.6;
+		viewCanvas.styles.bonds_hashSpacing_2D = 2.5;
+		viewCanvas.styles.atoms_font_size_2D = 10;
+		viewCanvas.styles.atoms_font_families_2D = [
+			"Helvetica",
+			"Arial",
+			"sans-serif",
+		];
+		viewCanvas.styles.atoms_displayTerminalCarbonLabels_2D = true;
+		// viewCanvas.styles.backgroundColor = 'grey';
+	}
+	let mol = ChemDoodle.readMOL(molBlock, transform ? 1.5 : null);
 	viewCanvas.loadMolecule(mol);
 };
 
@@ -122,9 +125,9 @@ const displayCorrectAns = (molBlock) => {
 	molLs = document.getElementById("duplicates");
 	const span = document.createElement("span");
 	const canvas2d = document.createElement("canvas");
-    const canvas3d = document.createElement('canvas')
+	const canvas3d = document.createElement("canvas");
 	span.appendChild(canvas2d);
-    span.appendChild(canvas3d)
+	span.appendChild(canvas3d);
 	molLs.appendChild(span);
 
 	const canvas2dId = `canvas${correctAns.length}0`;
@@ -132,10 +135,10 @@ const displayCorrectAns = (molBlock) => {
 	const viewCanvas2d = new ChemDoodle.ViewerCanvas(canvas2dId, 200, 200);
 	setViewCanvas(viewCanvas2d, molBlock);
 
-    const canvas3dId = `canvas${correctAns.length}1`;
-    canvas3d.setAttribute('id', canvas3dId)
-    const viewCanvas3d = new ChemDoodle.TransformCanvas3D(canvas3dId, 200, 200)
-    setViewCanvas(viewCanvas3d, molBlock, true)
+	const canvas3dId = `canvas${correctAns.length}1`;
+	canvas3d.setAttribute("id", canvas3dId);
+	const viewCanvas3d = new ChemDoodle.TransformCanvas3D(canvas3dId, 200, 200);
+	setViewCanvas(viewCanvas3d, molBlock, true);
 };
 
 // functions to communicate with the backend code
@@ -178,17 +181,17 @@ checkOneMolButton.addEventListener("click", () => {
 	const molBlock = getMolBlockStr(sketcher);
 
 	postData(
-		(url = endPoint + "/game_input"),
-		(data = {
+		endPoint + "/game_input",
+		{
 			molBlock: molBlock,
 			level: level,
 			correctAns: correctAns,
-		})
+		}
 	)
 		.then((data) => {
 			console.log(data);
 
-			getData((url = endPoint + "/single_result")).then((response) => {
+			getData(endPoint + "/single_result").then((response) => {
 				correct = response["correct"];
 				notDup = response["notDup"];
 				correctAns = response["correctAns"];
@@ -202,23 +205,19 @@ checkOneMolButton.addEventListener("click", () => {
 					).textContent = `Level Score: ${levelScore}`;
 					displayCorrectAns(data["molBlock"]);
 					alert(correctMessage);
-				} else if (!notDup) alert(dupMessage);
-				else alert(wrongMessage);
+				} else if (!notDup) {
+					levelScore -= dupDeduct;
+					alert(dupMessage);
+				} else {
+					levelScore -= incorrectDeduct;
+					alert(wrongMessage);
+				}
 			});
 		})
 		.catch((e) => {
 			console.log(e);
 		});
 });
-
-/**
- *
- * @param {ChemDoodle.SketcherCanvas} canvas
- * @returns {array}
- */
-const getStructure = (canvas) => {
-	return canvas.getMolecule().atoms;
-};
 
 /**
  *
@@ -233,18 +232,18 @@ const getMolBlockStr = (canvas) => {
 const checkLevelButton = document.getElementById("check-level");
 checkLevelButton.addEventListener("click", () => {
 	postData(
-		(url = endPoint + "/game_input"),
-		(data = {
+		endPoint + "/game_input",
+		{
 			molBlock: "",
 			level: level,
 			correctAns: correctAns,
-		})
+		}
 	)
 		.then((data) => {
 			console.log(data);
 
-			getData((url = endPoint + "/level_result")).then((response) => {
-				foundAll = response["foundAll"];
+			getData(endPoint + "/level_result").then((response) => {
+				let foundAll = response["foundAll"];
 
 				console.log(response);
 
@@ -252,28 +251,30 @@ checkLevelButton.addEventListener("click", () => {
 					clearInterval(counter);
 					console.log(timeCounter);
 					// assuming that for every 10 seconds early, add 5 points
-					levelScore += (timeCounter % 10) * bonusRate;
+					let timeEarly = levels[level].maxTime - timeCounter;
+					levelScore +=
+						timeEarly > 0 ? (timeEarly % 10) * bonusRate : 0;
 					totalScore += levelScore;
-					document.getElementById(
-						"total-score"
-					).textContent = `Total Score: ${totalScore}`;
+                    ChemDoodle.uis.actions.ClearAction(sketcher);
 
 					if (level == 7) {
 						alert(gameClear);
 						levelChange();
 						resetGame();
 						prevHighest = localStorage.getItem("highestScore");
-                        localStorage.clear()
+						localStorage.clear();
 						localStorage.setItem(
 							"highestScore",
-							(prevHighest && prevHighest >= totalScore) ? prevHighest : totalScore
+							prevHighest && prevHighest >= totalScore
+								? prevHighest
+								: totalScore
 						);
 					} else {
 						alert(levelClear());
 						level++;
 						resetLevel();
 						levelChange();
-						localStorage.setItem("curLevel", level + 1);
+						localStorage.setItem("curLevel", level);
 						localStorage.setItem("curScore", totalScore);
 					}
 				} else alert(levelIncomplete);
@@ -283,3 +284,10 @@ checkLevelButton.addEventListener("click", () => {
 			console.log(e);
 		});
 });
+
+
+const resetGameButton = document.getElementById('reset-game')
+resetGameButton.addEventListener('click', () => {
+    resetGame()
+    levelChange()
+})

@@ -5,10 +5,10 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- <link rel="stylesheet" href="https://assets.ubuntu.com/v1/vanilla-framework-version-3.8.0.min.css" /> -->
+    <link rel="stylesheet" href="https://assets.ubuntu.com/v1/vanilla-framework-version-3.8.0.min.css" />
     <link href="../css/game.css" rel="stylesheet">
-    <link rel=¨stylesheet¨ type=¨text/css¨ href=¨../install/ChemDoodleWeb.css¨>
-    <link rel=¨stylesheet¨ type=¨text/css¨ href=¨../install/uis/jquery-ui-1.11.4.css¨>
+    <link rel=¨stylesheet¨ href=¨../install/ChemDoodleWeb.css¨>
+    <link rel=¨stylesheet¨ href=¨../install/uis/jquery-ui-1.11.4.css¨>
     <title>Chem 120 Game</title>
 </head>
 
@@ -34,17 +34,20 @@
             <button id="start-time">Start Time</button>
             <p id="timer-display">0:00:00</p>
         </span>
-        <canvas id="sketcher">Sketcher canvas</canvas>
+        <div class="" id="drawing-space">
+            <canvas class="" id="sketcher">Sketcher canvas</canvas>
+        </div>
         <span id="command">
             <button id="check-single">Check molecule</button>
             <button id="check-level">Check level</button>
+            <button id="clear-canvas">Clear canvas</button>
         </span>
     </div>
     <div id="duplicates"></div>
 
 </body>
-<script src="../install/ChemDoodleWeb.js" type="text/javascript"></script>
-<script src="../install/uis/ChemDoodleWeb-uis.js" type="text/javascript"></script>
-<script src="../js/game.js" type="text/javascript"></script>
+<script src="../install/ChemDoodleWeb.js"></script>
+<script src="../install/uis/ChemDoodleWeb-uis.js" ></script>
+<script src="../js/game.js" type="module"></script>
 
 </html>
