@@ -5,33 +5,14 @@
 // Provides global variables used by the entire program.
 // Most of this should be configuration.
 
-// Timing multiplier for entire game engine.
-let gameSpeed = 1;
-
-// Colors
-const BLUE = { r: 0x67, g: 0xd7, b: 0xf0 };
-const GREEN = { r: 0xa6, g: 0xe0, b: 0x2c };
-const PINK = { r: 0xfa, g: 0x24, b: 0x73 };
-const ORANGE = { r: 0xfe, g: 0x95, b: 0x22 };
-const allColors = [BLUE, GREEN, PINK, ORANGE];
-
-// Gameplay
-const getSpawnDelay = () => {
-	const spawnDelayMax = 1400;
-	const spawnDelayMin = 550;
-	const spawnDelay = spawnDelayMax - state.game.cubeCount * 3.1;
-	return Math.max(spawnDelay, spawnDelayMin);
-};
-const doubleStrongEnableScore = 2000;
-// Number of cubes that must be smashed before activating a feature.
-const slowmoThreshold = 10;
-const strongThreshold = 25;
-const spinnerThreshold = 25;
+// Score controls for the whole game
+import levels from "./levels.js";
+const bonusRate = 10;
+const dupDeduct = 5;
+const incorrectDeduct = 10;
 
 // Interaction state
 let pointerIsDown = false;
-// The last known position of the primary pointer in screen coordinates.`
-let pointerScreen = { x: 0, y: 0 };
 // Same as `pointerScreen`, but converted to scene coordinates in rAF.
 let pointerScene = { x: 0, y: 0 };
 // Minimum speed of pointer before "hits" are counted.
@@ -56,33 +37,8 @@ const touchPoints = [];
 // Size of in-game targets. This affects rendered size and hit area.
 const targetRadius = 40;
 const targetHitRadius = 50;
-const makeTargetGlueColor = (target) => {
-	// const alpha = (target.health - 1) / (target.maxHealth - 1);
-	// return `rgba(170,221,255,${alpha.toFixed(3)})`;
-	return "rgb(170,221,255)";
-};
 // Size of target fragments
 const fragRadius = targetRadius / 3;
-
-// Game canvas element needed in setup.js and interaction.js
-const canvas = document.querySelector("#c");
-
-// 3D camera config
-// Affects perspective
-const cameraDistance = 900;
-// Does not affect perspective
-const sceneScale = 1;
-// Objects that get too close to the camera will be faded out to transparent over this range.
-// const cameraFadeStartZ = 0.8*cameraDistance - 6*targetRadius;
-const cameraFadeStartZ = 0.45 * cameraDistance;
-const cameraFadeEndZ = 0.65 * cameraDistance;
-const cameraFadeRange = cameraFadeEndZ - cameraFadeStartZ;
-
-// Globals used to accumlate all vertices/polygons in each frame
-const allVertices = [];
-const allPolys = [];
-const allShadowVertices = [];
-const allShadowPolys = [];
 
 // state.js
 // ============================================================================
@@ -99,7 +55,10 @@ const GAME_MODE_CASUAL = Symbol("GAME_MODE_CASUAL");
 // Available Menus
 const MENU_MAIN = Symbol("MENU_MAIN");
 const MENU_PAUSE = Symbol("MENU_PAUSE");
-const MENU_SCORE = Symbol("MENU_SCORE");
+const MENU_OVER = Symbol("MENU_OVER");
+const MENU_NEXT = Symbol("MENU_NEXT");
+const MENU_TUTORIAL_PAUSE = Symbol("MENU_TUTORIAL_PAUSE");
+const MENU_TUTORIAL_MAIN = Symbol("MENU_TUTORIAL_MAIN");
 
 //////////////////
 // Global State //
@@ -107,13 +66,11 @@ const MENU_SCORE = Symbol("MENU_SCORE");
 
 const state = {
 	game: {
-		mode: GAME_MODE_RANKED,
+		level: 0,
 		// Run time of current game.
 		time: 0,
 		// Player score.
 		score: 0,
-		// Total number of cubes smashed in game.
-		cubeCount: 0,
 	},
 	menus: {
 		// Set to `null` to hide all menus
@@ -127,22 +84,24 @@ const state = {
 
 const isInGame = () => !state.menus.active;
 const isMenuVisible = () => !!state.menus.active;
-const isCasualGame = () => state.game.mode === GAME_MODE_CASUAL;
 const isPaused = () => state.menus.active === MENU_PAUSE;
 
 ///////////////////
 // Local Storage //
 ///////////////////
 
-const highScoreKey = "__menja__highScore";
-const getHighScore = () => {
-	const raw = localStorage.getItem(highScoreKey);
+const highScoreKey = "__highScore";
+const curLvlKey = "__curLvl";
+const curScoreKey = "__curScore";
+
+const getLocalStorage = (key) => {
+	const raw = localStorage.getItem(key);
 	return raw ? parseInt(raw, 10) : 0;
 };
 
-let _lastHighscore = getHighScore();
+let _lastHighscore = getLocalStorage(highScoreKey);
 const setHighScore = (score) => {
-	_lastHighscore = getHighScore();
+	_lastHighscore = getLocalStorage(highScoreKey);
 	localStorage.setItem(highScoreKey, String(score));
 };
 
@@ -151,10 +110,6 @@ const isNewHighScore = () => state.game.score > _lastHighscore;
 // utils.js
 // ============================================================================
 // ============================================================================
-
-const invariant = (condition, message) => {
-	if (!condition) throw new Error(message);
-};
 
 /////////
 // DOM //
@@ -175,20 +130,9 @@ const handlePointerDown = (element, handler) => {
 // Converts a number into a formatted string with thousand separators.
 const formatNumber = (num) => num.toLocaleString();
 
-////////////////////
-// Math Constants //
-////////////////////
-
-const PI = Math.PI;
-const TAU = Math.PI * 2;
-const ETA = Math.PI * 0.5;
-
 //////////////////
 // Math Helpers //
 //////////////////
-
-// Clamps a number between min and max values (inclusive)
-const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
 
 // Linearly interpolate between numbers a and b by a specific amount.
 // mix >= 0 && mix <= 1
@@ -197,29 +141,6 @@ const lerp = (a, b, mix) => (b - a) * mix + a;
 ////////////////////
 // Random Helpers //
 ////////////////////
-
-// Generates a random number between min (inclusive) and max (exclusive)
-const random = (min, max) => Math.random() * (max - min) + min;
-
-// Generates a random integer between and possibly including min and max values
-const randomInt = (min, max) => ((Math.random() * (max - min + 1)) | 0) + min;
-
-// Returns a random element from an array
-const pickOne = (arr) => arr[(Math.random() * arr.length) | 0];
-
-///////////////////
-// Color Helpers //
-///////////////////
-
-// Converts an { r, g, b } color object to a 6-digit hex code.
-const colorToHex = (color) => {
-	return (
-		"#" +
-		(color.r | 0).toString(16).padStart(2, "0") +
-		(color.g | 0).toString(16).padStart(2, "0") +
-		(color.b | 0).toString(16).padStart(2, "0")
-	);
-};
 
 // Operates on an { r, g, b } color object.
 // Returns string hex code.
@@ -245,252 +166,6 @@ const shadeColor = (color, lightness) => {
 // Timing Helpers //
 ////////////////////
 
-const _allCooldowns = [];
-
-const makeCooldown = (rechargeTime, units = 1) => {
-	let timeRemaining = 0;
-	let lastTime = 0;
-
-	const initialOptions = { rechargeTime, units };
-
-	const updateTime = () => {
-		const now = state.game.time;
-		// Reset time remaining if time goes backwards.
-		if (now < lastTime) {
-			timeRemaining = 0;
-		} else {
-			// update...
-			timeRemaining -= now - lastTime;
-			if (timeRemaining < 0) timeRemaining = 0;
-		}
-		lastTime = now;
-	};
-
-	const canUse = () => {
-		updateTime();
-		return timeRemaining <= rechargeTime * (units - 1);
-	};
-
-	const cooldown = {
-		canUse,
-		useIfAble() {
-			const usable = canUse();
-			if (usable) timeRemaining += rechargeTime;
-			return usable;
-		},
-		mutate(options) {
-			if (options.rechargeTime) {
-				// Apply recharge time delta so change takes effect immediately.
-				timeRemaining -= rechargeTime - options.rechargeTime;
-				if (timeRemaining < 0) timeRemaining = 0;
-				rechargeTime = options.rechargeTime;
-			}
-			if (options.units) units = options.units;
-		},
-		reset() {
-			timeRemaining = 0;
-			lastTime = 0;
-			this.mutate(initialOptions);
-		},
-	};
-
-	_allCooldowns.push(cooldown);
-
-	return cooldown;
-};
-
-const resetAllCooldowns = () =>
-	_allCooldowns.forEach((cooldown) => cooldown.reset());
-
-const makeSpawner = ({ chance, cooldownPerSpawn, maxSpawns }) => {
-	const cooldown = makeCooldown(cooldownPerSpawn, maxSpawns);
-	return {
-		shouldSpawn() {
-			return Math.random() <= chance && cooldown.useIfAble();
-		},
-		mutate(options) {
-			if (options.chance) chance = options.chance;
-			cooldown.mutate({
-				rechargeTime: options.cooldownPerSpawn,
-				units: options.maxSpawns,
-			});
-		},
-	};
-};
-
-////////////////////
-// Vector Helpers //
-////////////////////
-
-const normalize = (v) => {
-	const mag = Math.hypot(v.x, v.y, v.z);
-	return {
-		x: v.x / mag,
-		y: v.y / mag,
-		z: v.z / mag,
-	};
-};
-
-// Curried math helpers
-const add = (a) => (b) => a + b;
-// Curried vector helpers
-const scaleVector = (scale) => (vector) => {
-	vector.x *= scale;
-	vector.y *= scale;
-	vector.z *= scale;
-};
-
-////////////////
-// 3D Helpers //
-////////////////
-
-// Clone array and all vertices.
-function cloneVertices(vertices) {
-	return vertices.map((v) => ({ x: v.x, y: v.y, z: v.z }));
-}
-
-// Copy vertex data from one array into another.
-// Arrays must be the same length.
-function copyVerticesTo(arr1, arr2) {
-	const len = arr1.length;
-	for (let i = 0; i < len; i++) {
-		const v1 = arr1[i];
-		const v2 = arr2[i];
-		v2.x = v1.x;
-		v2.y = v1.y;
-		v2.z = v1.z;
-	}
-}
-
-// Compute triangle midpoint.
-// Mutates `middle` property of given `poly`.
-function computeTriMiddle(poly) {
-	const v = poly.vertices;
-	poly.middle.x = (v[0].x + v[1].x + v[2].x) / 3;
-	poly.middle.y = (v[0].y + v[1].y + v[2].y) / 3;
-	poly.middle.z = (v[0].z + v[1].z + v[2].z) / 3;
-}
-
-// Compute quad midpoint.
-// Mutates `middle` property of given `poly`.
-function computeQuadMiddle(poly) {
-	const v = poly.vertices;
-	poly.middle.x = (v[0].x + v[1].x + v[2].x + v[3].x) / 4;
-	poly.middle.y = (v[0].y + v[1].y + v[2].y + v[3].y) / 4;
-	poly.middle.z = (v[0].z + v[1].z + v[2].z + v[3].z) / 4;
-}
-
-function computePolyMiddle(poly) {
-	if (poly.vertices.length === 3) {
-		computeTriMiddle(poly);
-	} else {
-		computeQuadMiddle(poly);
-	}
-}
-
-// Compute distance from any polygon (tri or quad) midpoint to camera.
-// Sets `depth` property of given `poly`.
-// Also triggers midpoint calculation, which mutates `middle` property of `poly`.
-function computePolyDepth(poly) {
-	computePolyMiddle(poly);
-	const dX = poly.middle.x;
-	const dY = poly.middle.y;
-	const dZ = poly.middle.z - cameraDistance;
-	poly.depth = Math.hypot(dX, dY, dZ);
-}
-
-// Compute normal of any polygon. Uses normalized vector cross product.
-// Mutates `normalName` property of given `poly`.
-function computePolyNormal(poly, normalName) {
-	// Store quick refs to vertices
-	const v1 = poly.vertices[0];
-	const v2 = poly.vertices[1];
-	const v3 = poly.vertices[2];
-	// Calculate difference of vertices, following winding order.
-	const ax = v1.x - v2.x;
-	const ay = v1.y - v2.y;
-	const az = v1.z - v2.z;
-	const bx = v1.x - v3.x;
-	const by = v1.y - v3.y;
-	const bz = v1.z - v3.z;
-	// Cross product
-	const nx = ay * bz - az * by;
-	const ny = az * bx - ax * bz;
-	const nz = ax * by - ay * bx;
-	// Compute magnitude of normal and normalize
-	const mag = Math.hypot(nx, ny, nz);
-	const polyNormal = poly[normalName];
-	polyNormal.x = nx / mag;
-	polyNormal.y = ny / mag;
-	polyNormal.z = nz / mag;
-}
-
-// Apply translation/rotation/scale to all given vertices.
-// If `vertices` and `target` are the same array, the vertices will be mutated in place.
-// If `vertices` and `target` are different arrays, `vertices` will not be touched, instead the
-// transformed values from `vertices` will be written to `target` array.
-function transformVertices(
-	vertices,
-	target,
-	tX,
-	tY,
-	tZ,
-	rX,
-	rY,
-	rZ,
-	sX,
-	sY,
-	sZ
-) {
-	// Matrix multiplcation constants only need calculated once for all vertices.
-	const sinX = Math.sin(rX);
-	const cosX = Math.cos(rX);
-	const sinY = Math.sin(rY);
-	const cosY = Math.cos(rY);
-	const sinZ = Math.sin(rZ);
-	const cosZ = Math.cos(rZ);
-
-	// Using forEach() like map(), but with a (recycled) target array.
-	vertices.forEach((v, i) => {
-		const targetVertex = target[i];
-		// X axis rotation
-		const x1 = v.x;
-		const y1 = v.z * sinX + v.y * cosX;
-		const z1 = v.z * cosX - v.y * sinX;
-		// Y axis rotation
-		const x2 = x1 * cosY - z1 * sinY;
-		const y2 = y1;
-		const z2 = x1 * sinY + z1 * cosY;
-		// Z axis rotation
-		const x3 = x2 * cosZ - y2 * sinZ;
-		const y3 = x2 * sinZ + y2 * cosZ;
-		const z3 = z2;
-
-		// Scale, Translate, and set the transform.
-		targetVertex.x = x3 * sX + tX;
-		targetVertex.y = y3 * sY + tY;
-		targetVertex.z = z3 * sZ + tZ;
-	});
-}
-
-// 3D projection on a single vertex.
-// Directly mutates the vertex.
-const projectVertex = (v) => {
-	const focalLength = cameraDistance * sceneScale;
-	const depth = focalLength / (cameraDistance - v.z);
-	v.x = v.x * depth;
-	v.y = v.y * depth;
-};
-
-// 3D projection on a single vertex.
-// Mutates a secondary target vertex.
-const projectVertexTo = (v, target) => {
-	const focalLength = cameraDistance * sceneScale;
-	const depth = focalLength / (cameraDistance - v.z);
-	target.x = v.x * depth;
-	target.y = v.y * depth;
-};
-
 // hud.js
 // ============================================================================
 // ============================================================================
@@ -498,28 +173,51 @@ const projectVertexTo = (v, target) => {
 const hudContainerNode = $(".hud");
 
 function setHudVisibility(visible) {
+    const gameNode = $(".game")
 	if (visible) {
-		hudContainerNode.style.display = "block";
+		hudContainerNode.style.display = "flex";
+        gameNode.classList.add("active")
+        renderTimeHud()
 	} else {
 		hudContainerNode.style.display = "none";
+        gameNode.classList.remove("active")
+        clearInterval(intervalId)
 	}
+}
+
+////////////
+//  Time  //
+////////////
+const timerNode = $(".timer")
+var intervalId;
+function renderTimeHud() {
+    function pad(value) {
+		return value > 9 ? value : "0" + value;
+	}
+	intervalId = setInterval(() => {
+		const seconds = pad(++state.game.time % 60);
+		timerNode.innerText = `0:${pad(
+			parseInt(state.game.time / 60, 10)
+		)}:${seconds}`;
+	}, 1000);
 }
 
 ///////////
 // Score //
 ///////////
-const scoreNode = $(".level");
-const cubeCountNode = $(".level-score");
+const levelNode = $(".level");
+const scoreNode = $(".level-score");
 
 function renderScoreHud() {
-	scoreNode.innerText = `SCORE: ${state.game.score}`;
+	levelNode.innerText = `LEVEL ${state.game.level}: ${levels[state.game.level].name}`;
 	scoreNode.style.display = "block";
-	cubeCountNode.style.opacity = 0.65;
+	scoreNode.style.opacity = 0.85;
 
-	cubeCountNode.innerText = `CUBES SMASHED: ${state.game.cubeCount}`;
+	scoreNode.innerText = `SCORE: ${state.game.score}`;
 }
 
 renderScoreHud();
+
 
 //////////////////
 // Pause Button //
@@ -535,8 +233,12 @@ handlePointerDown($(".pause-btn"), () => pauseGame());
 const menuContainerNode = $(".menus");
 const menuMainNode = $(".menu--main");
 const menuPauseNode = $(".menu--pause");
-const menuScoreNode = $(".menu--score");
+const menuOverNode = $(".menu--over");
+const menuNextNode = $(".menu--next");
+const tutorialNodeMain = $(".menu--tutorial-main");
+const tutorialNodePause = $(".menu--tutorial-pause");
 
+const highScoreMainNode = $(".high-score-lbl--main");
 const finalScoreLblNode = $(".final-score-lbl");
 const highScoreLblNode = $(".high-score-lbl");
 
@@ -551,26 +253,39 @@ function hideMenu(node) {
 function renderMenus() {
 	hideMenu(menuMainNode);
 	hideMenu(menuPauseNode);
-	hideMenu(menuScoreNode);
+	hideMenu(menuOverNode);
+	hideMenu(menuNextNode);
+	hideMenu(tutorialNodeMain);
+    hideMenu(tutorialNodePause);
 
 	switch (state.menus.active) {
 		case MENU_MAIN:
+			highScoreMainNode.innerText = getLocalStorage(highScoreKey);
 			showMenu(menuMainNode);
 			break;
 		case MENU_PAUSE:
 			showMenu(menuPauseNode);
 			break;
-		case MENU_SCORE:
+		case MENU_OVER:
 			finalScoreLblNode.textContent = formatNumber(state.game.score);
 			if (isNewHighScore()) {
 				highScoreLblNode.textContent = "New High Score!";
 			} else {
 				highScoreLblNode.textContent = `High Score: ${formatNumber(
-					getHighScore()
+					getLocalStorage(highScoreKey)
 				)}`;
 			}
-			showMenu(menuScoreNode);
+			showMenu(menuOverNode);
 			break;
+		case MENU_NEXT:
+			showMenu(menuNextNode);
+			break;
+		case MENU_TUTORIAL_MAIN:
+			showMenu(tutorialNodeMain);
+			break;
+        case MENU_TUTORIAL_PAUSE:
+            showMenu(tutorialNodePause);
+            break;
 	}
 
 	setHudVisibility(!isMenuVisible());
@@ -588,21 +303,28 @@ renderMenus();
 ////////////////////
 
 // Main Menu
-handleClick($(".play-normal-btn"), () => {
-	setGameMode(GAME_MODE_RANKED);
+handleClick($(".start-btn"), () => {
+	setLevel(0);
 	setActiveMenu(null);
 	resetGame();
 });
 
-handleClick($(".play-casual-btn"), () => {
-	setGameMode(GAME_MODE_CASUAL);
+handleClick($(".cont-btn"), () => {
+	setLevel(getLocalStorage(curLvlKey));
 	setActiveMenu(null);
 	resetGame();
+});
+
+handleClick($(".tutorial-btn--main"), () => {
+	setActiveMenu(MENU_TUTORIAL_MAIN);
 });
 
 // Pause Menu
 handleClick($(".resume-btn"), () => resumeGame());
 handleClick($(".menu-btn--pause"), () => setActiveMenu(MENU_MAIN));
+handleClick($(".tutorial-btn--pause"), () => {
+	setActiveMenu(MENU_TUTORIAL_PAUSE);
+});
 
 // Score Menu
 handleClick($(".play-again-btn"), () => {
@@ -612,34 +334,14 @@ handleClick($(".play-again-btn"), () => {
 
 handleClick($(".menu-btn--score"), () => setActiveMenu(MENU_MAIN));
 
-////////////////////
-// Button Actions //
-////////////////////
+// Tutorial
+handleClick($(".close-tutorial-btn--main"), () => {
+    setActiveMenu(MENU_MAIN)
+})
 
-// Main Menu
-handleClick($(".play-normal-btn"), () => {
-	setGameMode(GAME_MODE_RANKED);
-	setActiveMenu(null);
-	resetGame();
-});
-
-handleClick($(".play-casual-btn"), () => {
-	setGameMode(GAME_MODE_CASUAL);
-	setActiveMenu(null);
-	resetGame();
-});
-
-// Pause Menu
-handleClick($(".resume-btn"), () => resumeGame());
-handleClick($(".menu-btn--pause"), () => setActiveMenu(MENU_MAIN));
-
-// Score Menu
-handleClick($(".play-again-btn"), () => {
-	setActiveMenu(null);
-	resetGame();
-});
-
-handleClick($(".menu-btn--score"), () => setActiveMenu(MENU_MAIN));
+handleClick($(".close-tutorial-btn--pause"), () => {
+    setActiveMenu(MENU_PAUSE)
+})
 
 // actions.js
 // ============================================================================
@@ -673,10 +375,6 @@ function incrementScore(inc) {
 	}
 }
 
-function setCubeCount(count) {
-	state.game.cubeCount = count;
-	renderScoreHud();
-}
 
 function incrementCubeCount(inc) {
 	if (isInGame()) {
@@ -689,17 +387,13 @@ function incrementCubeCount(inc) {
 // GAME ACTIONS //
 //////////////////
 
-function setGameMode(mode) {
-	state.game.mode = mode;
+function setLevel(level) {
+	state.game.level = level;
 }
 
 function resetGame() {
-	resetAllTargets();
 	state.game.time = 0;
-	resetAllCooldowns();
-	setScore(0);
-	setCubeCount(0);
-	spawnTime = getSpawnDelay();
+	setScore(getLocalStorage(curScoreKey));
 }
 
 function pauseGame() {
@@ -710,12 +404,17 @@ function resumeGame() {
 	isPaused() && setActiveMenu(null);
 }
 
+function endLevel() {
+    handleCanvasPointerUp();
+	setActiveMenu(MENU_NEXT);
+}
+
 function endGame() {
 	handleCanvasPointerUp();
 	if (isNewHighScore()) {
 		setHighScore(state.game.score);
 	}
-	setActiveMenu(MENU_SCORE);
+	setActiveMenu(MENU_OVER);
 }
 
 ////////////////////////
@@ -743,356 +442,6 @@ let slowmoRemaining = 0;
 let spawnExtra = 0;
 const spawnExtraDelay = 300;
 let targetSpeed = 1;
-
-function tick(width, height, simTime, simSpeed, lag) {
-	PERF_START("frame");
-	PERF_START("tick");
-
-	state.game.time += simTime;
-
-	if (slowmoRemaining > 0) {
-		slowmoRemaining -= simTime;
-		if (slowmoRemaining < 0) {
-			slowmoRemaining = 0;
-		}
-		targetSpeed = pointerIsDown ? 0.075 : 0.3;
-	} else {
-		const menuPointerDown = isMenuVisible() && pointerIsDown;
-		targetSpeed = menuPointerDown ? 0.025 : 1;
-	}
-
-	renderSlowmoStatus(slowmoRemaining / slowmoDuration);
-
-	gameSpeed += ((targetSpeed - gameSpeed) / 22) * lag;
-	gameSpeed = clamp(gameSpeed, 0, 1);
-
-	const centerX = width / 2;
-	const centerY = height / 2;
-
-	const simAirDrag = 1 - airDrag * simSpeed;
-	const simAirDragSpark = 1 - airDragSpark * simSpeed;
-
-	// Pointer Tracking
-	// -------------------
-
-	// Compute speed and x/y deltas.
-	// There is also a "scaled" variant taking game speed into account. This serves two purposes:
-	//  - Lag won't create large spikes in speed/deltas
-	//  - In slow mo, speed is increased proportionately to match "reality". Without this boost,
-	//    it feels like your actions are dampened in slow mo.
-	const forceMultiplier = 1 / (simSpeed * 0.75 + 0.25);
-	pointerDelta.x = 0;
-	pointerDelta.y = 0;
-	pointerDeltaScaled.x = 0;
-	pointerDeltaScaled.y = 0;
-	const lastPointer = touchPoints[touchPoints.length - 1];
-
-	if (pointerIsDown && lastPointer && !lastPointer.touchBreak) {
-		pointerDelta.x = pointerScene.x - lastPointer.x;
-		pointerDelta.y = pointerScene.y - lastPointer.y;
-		pointerDeltaScaled.x = pointerDelta.x * forceMultiplier;
-		pointerDeltaScaled.y = pointerDelta.y * forceMultiplier;
-	}
-	const pointerSpeed = Math.hypot(pointerDelta.x, pointerDelta.y);
-	const pointerSpeedScaled = pointerSpeed * forceMultiplier;
-
-	// Track points for later calculations, including drawing trail.
-	touchPoints.forEach((p) => (p.life -= simTime));
-
-	if (pointerIsDown) {
-		touchPoints.push({
-			x: pointerScene.x,
-			y: pointerScene.y,
-			life: touchPointLife,
-		});
-	}
-
-	while (touchPoints[0] && touchPoints[0].life <= 0) {
-		touchPoints.shift();
-	}
-
-	// Entity Manipulation
-	// --------------------
-	PERF_START("entities");
-
-	// Spawn targets
-	spawnTime -= simTime;
-	if (spawnTime <= 0) {
-		if (spawnExtra > 0) {
-			spawnExtra--;
-			spawnTime = spawnExtraDelay;
-		} else {
-			spawnTime = getSpawnDelay();
-		}
-		const target = getTarget();
-		const spawnRadius = Math.min(centerX * 0.8, maxSpawnX);
-		target.x = Math.random() * spawnRadius * 2 - spawnRadius;
-		target.y = centerY + targetHitRadius * 2;
-		target.z = Math.random() * targetRadius * 2 - targetRadius;
-		target.xD = Math.random() * ((target.x * -2) / 120);
-		target.yD = -20;
-		targets.push(target);
-	}
-
-	// Animate targets and remove when offscreen
-	const leftBound = -centerX + targetRadius;
-	const rightBound = centerX - targetRadius;
-	const ceiling = -centerY - 120;
-	const boundDamping = 0.4;
-
-	targetLoop: for (let i = targets.length - 1; i >= 0; i--) {
-		const target = targets[i];
-		target.x += target.xD * simSpeed;
-		target.y += target.yD * simSpeed;
-
-		if (target.y < ceiling) {
-			target.y = ceiling;
-			target.yD = 0;
-		}
-
-		if (target.x < leftBound) {
-			target.x = leftBound;
-			target.xD *= -boundDamping;
-		} else if (target.x > rightBound) {
-			target.x = rightBound;
-			target.xD *= -boundDamping;
-		}
-
-		if (target.z < backboardZ) {
-			target.z = backboardZ;
-			target.zD *= -boundDamping;
-		}
-
-		target.yD += gravity * simSpeed;
-		target.rotateX += target.rotateXD * simSpeed;
-		target.rotateY += target.rotateYD * simSpeed;
-		target.rotateZ += target.rotateZD * simSpeed;
-		target.transform();
-		target.project();
-
-		// Remove if offscreen
-		if (target.y > centerY + targetHitRadius * 2) {
-			targets.splice(i, 1);
-			returnTarget(target);
-			if (isInGame()) {
-				if (isCasualGame()) {
-					incrementScore(-25);
-				} else {
-					endGame();
-				}
-			}
-			continue;
-		}
-
-		// If pointer is moving really fast, we want to hittest multiple points along the path.
-		// We can't use scaled pointer speed to determine this, since we care about actual screen
-		// distance covered.
-		const hitTestCount = Math.ceil((pointerSpeed / targetRadius) * 2);
-		// Start loop at `1` and use `<=` check, so we skip 0% and end up at 100%.
-		// This omits the previous point position, and includes the most recent.
-		for (let ii = 1; ii <= hitTestCount; ii++) {
-			const percent = 1 - ii / hitTestCount;
-			const hitX = pointerScene.x - pointerDelta.x * percent;
-			const hitY = pointerScene.y - pointerDelta.y * percent;
-			const distance = Math.hypot(
-				hitX - target.projected.x,
-				hitY - target.projected.y
-			);
-
-			if (distance <= targetHitRadius) {
-				// Hit! (though we don't want to allow hits on multiple sequential frames)
-				if (!target.hit) {
-					target.hit = true;
-
-					target.xD += pointerDeltaScaled.x * hitDampening;
-					target.yD += pointerDeltaScaled.y * hitDampening;
-					target.rotateXD += pointerDeltaScaled.y * 0.001;
-					target.rotateYD += pointerDeltaScaled.x * 0.001;
-
-					const sparkSpeed = 7 + pointerSpeedScaled * 0.125;
-
-					if (pointerSpeedScaled > minPointerSpeed) {
-						target.health--;
-						incrementScore(10);
-
-						if (target.health <= 0) {
-							incrementCubeCount(1);
-							createBurst(target, forceMultiplier);
-							sparkBurst(hitX, hitY, 8, sparkSpeed);
-							if (target.wireframe) {
-								slowmoRemaining = slowmoDuration;
-								spawnTime = 0;
-								spawnExtra = 2;
-							}
-							targets.splice(i, 1);
-							returnTarget(target);
-						} else {
-							sparkBurst(hitX, hitY, 8, sparkSpeed);
-							glueShedSparks(target);
-							updateTargetHealth(target, 0);
-						}
-					} else {
-						incrementScore(5);
-						sparkBurst(hitX, hitY, 3, sparkSpeed);
-					}
-				}
-				// Break the current loop and continue the outer loop.
-				// This skips to processing the next target.
-				continue targetLoop;
-			}
-		}
-
-		// This code will only run if target hasn't been "hit".
-		target.hit = false;
-	}
-
-	// Animate fragments and remove when offscreen.
-	const fragBackboardZ = backboardZ + fragRadius;
-	// Allow fragments to move off-screen to sides for a while, since shadows are still visible.
-	const fragLeftBound = -width;
-	const fragRightBound = width;
-
-	for (let i = frags.length - 1; i >= 0; i--) {
-		const frag = frags[i];
-		frag.x += frag.xD * simSpeed;
-		frag.y += frag.yD * simSpeed;
-		frag.z += frag.zD * simSpeed;
-
-		frag.xD *= simAirDrag;
-		frag.yD *= simAirDrag;
-		frag.zD *= simAirDrag;
-
-		if (frag.y < ceiling) {
-			frag.y = ceiling;
-			frag.yD = 0;
-		}
-
-		if (frag.z < fragBackboardZ) {
-			frag.z = fragBackboardZ;
-			frag.zD *= -boundDamping;
-		}
-
-		frag.yD += gravity * simSpeed;
-		frag.rotateX += frag.rotateXD * simSpeed;
-		frag.rotateY += frag.rotateYD * simSpeed;
-		frag.rotateZ += frag.rotateZD * simSpeed;
-		frag.transform();
-		frag.project();
-
-		// Removal conditions
-		if (
-			// Bottom of screen
-			frag.projected.y > centerY + targetHitRadius ||
-			// Sides of screen
-			frag.projected.x < fragLeftBound ||
-			frag.projected.x > fragRightBound ||
-			// Too close to camera
-			frag.z > cameraFadeEndZ
-		) {
-			frags.splice(i, 1);
-			returnFrag(frag);
-			continue;
-		}
-	}
-
-	// 2D sparks
-	for (let i = sparks.length - 1; i >= 0; i--) {
-		const spark = sparks[i];
-		spark.life -= simTime;
-		if (spark.life <= 0) {
-			sparks.splice(i, 1);
-			returnSpark(spark);
-			continue;
-		}
-		spark.x += spark.xD * simSpeed;
-		spark.y += spark.yD * simSpeed;
-		spark.xD *= simAirDragSpark;
-		spark.yD *= simAirDragSpark;
-		spark.yD += gravity * simSpeed;
-	}
-
-	PERF_END("entities");
-
-	// 3D transforms
-	// -------------------
-
-	PERF_START("3D");
-
-	// Aggregate all scene vertices/polys
-	allVertices.length = 0;
-	allPolys.length = 0;
-	allShadowVertices.length = 0;
-	allShadowPolys.length = 0;
-	targets.forEach((entity) => {
-		allVertices.push(...entity.vertices);
-		allPolys.push(...entity.polys);
-		allShadowVertices.push(...entity.shadowVertices);
-		allShadowPolys.push(...entity.shadowPolys);
-	});
-
-	frags.forEach((entity) => {
-		allVertices.push(...entity.vertices);
-		allPolys.push(...entity.polys);
-		allShadowVertices.push(...entity.shadowVertices);
-		allShadowPolys.push(...entity.shadowPolys);
-	});
-
-	// Scene calculations/transformations
-	allPolys.forEach((p) => computePolyNormal(p, "normalWorld"));
-	allPolys.forEach(computePolyDepth);
-	allPolys.sort((a, b) => b.depth - a.depth);
-
-	// Perspective projection
-	allVertices.forEach(projectVertex);
-
-	allPolys.forEach((p) => computePolyNormal(p, "normalCamera"));
-
-	PERF_END("3D");
-
-	PERF_START("shadows");
-
-	// Rotate shadow vertices to light source perspective
-	transformVertices(
-		allShadowVertices,
-		allShadowVertices,
-		0,
-		0,
-		0,
-		TAU / 8,
-		0,
-		0,
-		1,
-		1,
-		1
-	);
-
-	allShadowPolys.forEach((p) => computePolyNormal(p, "normalWorld"));
-
-	const shadowDistanceMult = Math.hypot(1, 1);
-	const shadowVerticesLength = allShadowVertices.length;
-	for (let i = 0; i < shadowVerticesLength; i++) {
-		const distance = allVertices[i].z - backboardZ;
-		allShadowVertices[i].z -= shadowDistanceMult * distance;
-	}
-	transformVertices(
-		allShadowVertices,
-		allShadowVertices,
-		0,
-		0,
-		0,
-		-TAU / 8,
-		0,
-		0,
-		1,
-		1,
-		1
-	);
-	allShadowVertices.forEach(projectVertex);
-
-	PERF_END("shadows");
-
-	PERF_END("tick");
-}
 
 // draw.js
 // ============================================================================

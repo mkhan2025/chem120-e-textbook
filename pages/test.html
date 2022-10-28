@@ -28,9 +28,9 @@
             <h1>FIND THEM ALL</h1>
             <h2>Record:</h2>
             <div class="high-score-lbl--main">10</div>
-            <button type="button" class="button play-normal-btn">START GAME</button>
-            <button type="button" class="button play-casual-btn">CONTINUE GAME</button> <!--TODO: replace className-->
-            <button type="button" class="button play-casual-btn">HOW TO PLAY?</button> <!--TODO: replace className-->
+            <button type="button" class="button start-btn">START GAME</button>
+            <button type="button" class="button cont-btn">CONTINUE GAME</button> <!--TODO: replace className-->
+            <button type="button" class="button tutorial-btn--main">HOW TO PLAY?</button> <!--TODO: replace className-->
             <div class="credits">A chemistry game for CHEM 120 @ <a href="https://depauw.edu" target="_blank"
                     rel="noreferrer">DePauw University</a></div>
         </div>
@@ -38,10 +38,10 @@
             <h1>Paused</h1>
             <button type="button" class="button resume-btn">RESUME GAME</button>
             <button type="button" class="button restart-btn--pause">RESTART GAME</button>
-            <button type="button" class="button instr-btn--pause">HOW TO PLAY?</button>
+            <button type="button" class="button tutorial-btn--pause">HOW TO PLAY?</button>
             <button type="button" class="button menu-btn--pause">MAIN MENU</button>
         </div>
-        <div class="menu menu--score">
+        <div class="menu menu--over">
             <h1>Game Over</h1>
             <h2>Your Score:</h2>
             <div class="final-score-lbl"></div>
@@ -49,18 +49,36 @@
             <button type="button" class="button play-again-btn">PLAY AGAIN</button>
             <button type="button" class="button menu-btn--score">MAIN MENU</button>
         </div>
+        <div class="menu menu--next">
+            <h1>Level Completed</h1>
+            <h2>Your Score:</h2>
+            <div class="final-score-lbl"></div>
+            <button type="button" class="button next-level-btn">NEXT LEVEL</button>
+            <button type="button" class="button menu-btn--score">MAIN MENU</button>
+        </div>
+        <div class="menu menu--tutorial-pause">
+            <h1>How to play?</h1>
+            <img src="https://media.4rgos.it/i/Argos/sb-1722-m007-25-01-as490149130?maxW=768&qlt=75&fmt.jpeg.interlaced=true" />
+            <button type="button" class="button close-tutorial-btn--pause">Close tutorial</button>
+        </div>
+        <div class="menu menu--tutorial-main">
+            <h1>How to play?</h1>
+            <img src="https://media.4rgos.it/i/Argos/sb-1722-m007-25-01-as490149130?maxW=768&qlt=75&fmt.jpeg.interlaced=true" />
+            <button type="button" class="button close-tutorial-btn--main">Close tutorial</button>
+        </div>
     </div>
 
     <!-- Game canvas -->
-    <div>
-        <div class="game game--space">
+    <div class="game">
+        <div class="game--space">
             <canvas id="c">Sketcher canvas</canvas>
         </div>
-        <span class="game game--command">
+        <div class="game--command">
             <button id="check-single">Check molecule</button>
             <button id="check-level">Check level</button>
             <button id="clear-canvas">Clear canvas</button>
-        </span>
+        </div>
+        <div class="duplicates"></div>
     </div>
 
 </body>
