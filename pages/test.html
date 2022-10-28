@@ -34,13 +34,15 @@
             <div class="credits">A chemistry game for CHEM 120 @ <a href="https://depauw.edu" target="_blank"
                     rel="noreferrer">DePauw University</a></div>
         </div>
+
         <div class="menu menu--pause">
             <h1>Paused</h1>
             <button type="button" class="button resume-btn">RESUME GAME</button>
-            <button type="button" class="button restart-btn--pause">RESTART GAME</button>
+            <button type="button" class="button restart-btn">RESTART GAME</button>
             <button type="button" class="button tutorial-btn--pause">HOW TO PLAY?</button>
             <button type="button" class="button menu-btn--pause">MAIN MENU</button>
         </div>
+
         <div class="menu menu--over">
             <h1>Game Over</h1>
             <h2>Your Score:</h2>
@@ -49,13 +51,15 @@
             <button type="button" class="button play-again-btn">PLAY AGAIN</button>
             <button type="button" class="button menu-btn--score">MAIN MENU</button>
         </div>
+
         <div class="menu menu--next">
             <h1>Level Completed</h1>
             <h2>Your Score:</h2>
             <div class="final-score-lbl"></div>
             <button type="button" class="button next-level-btn">NEXT LEVEL</button>
-            <button type="button" class="button menu-btn--score">MAIN MENU</button>
+            <button type="button" class="button menu-btn--over">MAIN MENU</button>
         </div>
+
         <div class="menu menu--tutorial-pause">
             <h1>How to play?</h1>
             <img src="https://media.4rgos.it/i/Argos/sb-1722-m007-25-01-as490149130?maxW=768&qlt=75&fmt.jpeg.interlaced=true" />
@@ -74,11 +78,13 @@
             <canvas id="c">Sketcher canvas</canvas>
         </div>
         <div class="game--command">
-            <button id="check-single">Check molecule</button>
-            <button id="check-level">Check level</button>
-            <button id="clear-canvas">Clear canvas</button>
+            <button class="button game-btn" id="check-single">Check molecule</button>
+            <button class="button game-btn" id="check-level">Check level</button>
+            <button class="button game-btn" id="clear-canvas">Clear canvas</button>
         </div>
-        <div class="duplicates"></div>
+        <div class="duplicates">
+            <h2>You have found these isomers</h2>
+        </div>
     </div>
 
 </body>

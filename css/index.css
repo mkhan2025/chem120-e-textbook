@@ -1,7 +1,11 @@
 body {
 	margin: 0;
-	background-color: #000;
-	background-image: radial-gradient(ellipse at top, #335476 0.0%, #31506e 11.1%, #304b67 22.2%, #2f4760 33.3%, #2d4359 44.4%, #2c3f51 55.6%, #2a3a4a 66.7%, #293643 77.8%, #28323d 88.9%, #262e36 100.0%);
+	/* background-image: radial-gradient(ellipse at top, #335476 0.0%, #31506e 11.1%, #304b67 22.2%, #2f4760 33.3%, #2d4359 44.4%, #2c3f51 55.6%, #2a3a4a 66.7%, #293643 77.8%, #28323d 88.9%, #262e36 100.0%); */
+	background-image: url(https://media.tenor.com/JYKx4QQuaD4AAAAd/chemistry.gif);
+	background-color: rgba(0,0,0,0.5);
+	background-position: center;
+	background-repeat: no-repeat;
+	background-size: cover;
 	height: 100vh;
 	overflow: hidden;
 
@@ -13,6 +17,8 @@ body {
 
 .game {
 	visibility: hidden;
+	display:flex;
+	justify-content: space-between;
 }
 .game.active {
 	visibility: visible;
@@ -23,8 +29,6 @@ body {
 	touch-action: none;
 	transform: translateZ(0);
 }
-
-
 
 
 
