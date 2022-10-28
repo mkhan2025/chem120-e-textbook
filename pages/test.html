@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="../css/index.css" rel="stylesheet">
+    <title>Document</title>
+</head>
+
+<body>
+    <!-- Gameplay HUD -->
+    <div class="hud">
+        <div class="hud__score">
+            <div class="level"></div>
+            <div class="level-score"></div>
+        </div>
+        <div class="timer">0:00:00</div>
+        <div class="pause-btn">
+            <div></div>
+        </div>
+    </div>
+
+    <!-- Menu System -->
+    <div class="menus">
+        <div class="menu menu--main">
+            <h1>FIND THEM ALL</h1>
+            <h2>Record:</h2>
+            <div class="high-score-lbl--main">10</div>
+            <button type="button" class="button play-normal-btn">START GAME</button>
+            <button type="button" class="button play-casual-btn">CONTINUE GAME</button> <!--TODO: replace className-->
+            <button type="button" class="button play-casual-btn">HOW TO PLAY?</button> <!--TODO: replace className-->
+            <div class="credits">A chemistry game for CHEM 120 @ <a href="https://depauw.edu" target="_blank"
+                    rel="noreferrer">DePauw University</a></div>
+        </div>
+        <div class="menu menu--pause">
+            <h1>Paused</h1>
+            <button type="button" class="button resume-btn">RESUME GAME</button>
+            <button type="button" class="button restart-btn--pause">RESTART GAME</button>
+            <button type="button" class="button instr-btn--pause">HOW TO PLAY?</button>
+            <button type="button" class="button menu-btn--pause">MAIN MENU</button>
+        </div>
+        <div class="menu menu--score">
+            <h1>Game Over</h1>
+            <h2>Your Score:</h2>
+            <div class="final-score-lbl"></div>
+            <div class="high-score-lbl"></div>
+            <button type="button" class="button play-again-btn">PLAY AGAIN</button>
+            <button type="button" class="button menu-btn--score">MAIN MENU</button>
+        </div>
+    </div>
+
+    <!-- Game canvas -->
+    <div>
+        <div class="game game--space">
+            <canvas id="c">Sketcher canvas</canvas>
+        </div>
+        <span class="game game--command">
+            <button id="check-single">Check molecule</button>
+            <button id="check-level">Check level</button>
+            <button id="clear-canvas">Clear canvas</button>
+        </span>
+    </div>
+
+</body>
+<script src="../install/ChemDoodleWeb.js"></script>
+<script src="../install/uis/ChemDoodleWeb-uis.js"></script>
+<script src="../js/index.js" type="module"></script>
+
+</html>
