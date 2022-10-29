@@ -11,80 +11,20 @@ const bonusRate = 10;
 const dupDeduct = 5;
 const incorrectDeduct = 10;
 
+// Game constants
+const  endPoint = "http://127.0.0.1:5000/"
+// const endPoint = "https://chem120-game.up.railway.app/";
+const correctMessage = "Correct answer";
+const wrongMessage = "Incorrect answer";
+const dupMessage = "Duplicated answer";
+const levelIncomplete = "You haven't found all isomers. Keep going!";
+
 // Interaction state
 let pointerIsDown = false;
-// Same as `pointerScreen`, but converted to scene coordinates in rAF.
-let pointerScene = { x: 0, y: 0 };
-// Minimum speed of pointer before "hits" are counted.
-const minPointerSpeed = 60;
-// The hit speed affects the direction the target post-hit. This number dampens that force.
-const hitDampening = 0.1;
-// Backboard receives shadows and is the farthest negative Z position of entities.
-const backboardZ = -400;
-const shadowColor = "#262e36";
-// How much air drag is applied to standard objects
-const airDrag = 0.022;
-const gravity = 0.3;
-// Spark config
-const sparkColor = "rgba(170,221,255,.9)";
-const sparkThickness = 2.2;
-const airDragSpark = 0.1;
-// Track pointer positions to show trail
-const touchTrailColor = "rgba(170,221,255,.62)";
-const touchTrailThickness = 7;
-const touchPointLife = 120;
-const touchPoints = [];
-// Size of in-game targets. This affects rendered size and hit area.
-const targetRadius = 40;
-const targetHitRadius = 50;
-// Size of target fragments
-const fragRadius = targetRadius / 3;
 
 // state.js
 // ============================================================================
 // ============================================================================
-
-///////////
-// Enums //
-///////////
-
-// Game Modes
-const GAME_MODE_RANKED = Symbol("GAME_MODE_RANKED");
-const GAME_MODE_CASUAL = Symbol("GAME_MODE_CASUAL");
-
-// Available Menus
-const MENU_MAIN = Symbol("MENU_MAIN");
-const MENU_PAUSE = Symbol("MENU_PAUSE");
-const MENU_OVER = Symbol("MENU_OVER");
-const MENU_NEXT = Symbol("MENU_NEXT");
-const MENU_TUTORIAL_PAUSE = Symbol("MENU_TUTORIAL_PAUSE");
-const MENU_TUTORIAL_MAIN = Symbol("MENU_TUTORIAL_MAIN");
-
-//////////////////
-// Global State //
-//////////////////
-
-const state = {
-	game: {
-		level: 0,
-		// Run time of current game.
-		time: 0,
-		// Player score.
-		score: 0,
-	},
-	menus: {
-		// Set to `null` to hide all menus
-		active: MENU_MAIN,
-	},
-};
-
-////////////////////////////
-// Global State Selectors //
-////////////////////////////
-
-const isInGame = () => !state.menus.active;
-const isMenuVisible = () => !!state.menus.active;
-const isPaused = () => state.menus.active === MENU_PAUSE;
 
 ///////////////////
 // Local Storage //
@@ -105,7 +45,78 @@ const setHighScore = (score) => {
 	localStorage.setItem(highScoreKey, String(score));
 };
 
-const isNewHighScore = () => state.game.score > _lastHighscore;
+const isNewHighScore = () => state.game.totalScore > _lastHighscore;
+
+///////////
+// Enums //
+///////////
+
+// Available Menus
+const MENU_MAIN = Symbol("MENU_MAIN");
+const MENU_PAUSE = Symbol("MENU_PAUSE");
+const MENU_OVER = Symbol("MENU_OVER");
+const MENU_NEXT = Symbol("MENU_NEXT");
+const MENU_TUTORIAL_PAUSE = Symbol("MENU_TUTORIAL_PAUSE");
+const MENU_TUTORIAL_MAIN = Symbol("MENU_TUTORIAL_MAIN");
+
+//////////////////
+// Global State //
+//////////////////
+
+const state = {
+	game: {
+		level: 0,
+		// Run time of current game.
+		time: 0,
+        // List of the correct answers so far
+        correctAns: [],
+        // Score of the current level
+		lvlScore: 0,
+		// Score of all level
+		totalScore: 0,
+	},
+	menus: {
+		// Set to `null` to hide all menus
+		active: MENU_MAIN,
+	},
+};
+
+////////////////////////////
+// Global State Selectors //
+////////////////////////////
+
+const isInGame = () => !state.menus.active;
+const isMenuVisible = () => !!state.menus.active;
+const isPaused = () => state.menus.active === MENU_PAUSE;
+
+// canvas.js
+// ============================================================================
+// ============================================================================
+const setUpCanvas = () => {
+	// Initiate the canvas
+	const options = {
+		useService: true,
+		oneMolecule: true,
+		// isMobile: true,
+	};
+
+	// Set up the ChemDoodle SketcherCanvas component
+	ChemDoodle.ELEMENT["H"].jmolColor = "black";
+	ChemDoodle.ELEMENT["S"].jmolColor = "#B9A130";
+	const sketcher = new ChemDoodle.SketcherCanvas("c", 600, 400, options);
+
+	sketcher.styles.atoms_displayTerminalCarbonLabels_2D = true;
+	sketcher.styles.atoms_useJMOLColors = true;
+	sketcher.styles.bonds_clearOverlaps_2D = true;
+	sketcher.styles.shapes_color = "c10000";
+	sketcher.repaint();
+    return sketcher
+};
+
+// index.js
+// ============================================================================
+// ============================================================================
+const sketcher = setUpCanvas();
 
 // utils.js
 // ============================================================================
@@ -130,38 +141,6 @@ const handlePointerDown = (element, handler) => {
 // Converts a number into a formatted string with thousand separators.
 const formatNumber = (num) => num.toLocaleString();
 
-//////////////////
-// Math Helpers //
-//////////////////
-
-// Linearly interpolate between numbers a and b by a specific amount.
-// mix >= 0 && mix <= 1
-const lerp = (a, b, mix) => (b - a) * mix + a;
-
-////////////////////
-// Random Helpers //
-////////////////////
-
-// Operates on an { r, g, b } color object.
-// Returns string hex code.
-// `lightness` must range from 0 to 1. 0 is pure black, 1 is pure white.
-const shadeColor = (color, lightness) => {
-	let other, mix;
-	if (lightness < 0.5) {
-		other = 0;
-		mix = 1 - lightness * 2;
-	} else {
-		other = 255;
-		mix = lightness * 2 - 1;
-	}
-	return (
-		"#" +
-		(lerp(color.r, other, mix) | 0).toString(16).padStart(2, "0") +
-		(lerp(color.g, other, mix) | 0).toString(16).padStart(2, "0") +
-		(lerp(color.b, other, mix) | 0).toString(16).padStart(2, "0")
-	);
-};
-
 ////////////////////
 // Timing Helpers //
 ////////////////////
@@ -173,24 +152,24 @@ const shadeColor = (color, lightness) => {
 const hudContainerNode = $(".hud");
 
 function setHudVisibility(visible) {
-    const gameNode = $(".game")
+	const gameNode = $(".game");
 	if (visible) {
 		hudContainerNode.style.display = "flex";
-        gameNode.classList.add("active")
-        renderTimeHud()
+		gameNode.classList.add("active");
+		renderTimeHud();
 	} else {
 		hudContainerNode.style.display = "none";
-        gameNode.classList.remove("active")
+		gameNode.classList.remove("active");
 	}
 }
 
 ////////////
 //  Time  //
 ////////////
-const timerNode = $(".timer")
+const timerNode = $(".timer");
 var intervalId;
 function renderTimeHud() {
-    function pad(value) {
+	function pad(value) {
 		return value > 9 ? value : "0" + value;
 	}
 	intervalId = setInterval(() => {
@@ -208,14 +187,16 @@ const levelNode = $(".level");
 const scoreNode = $(".level-score");
 
 function renderScoreHud() {
-	levelNode.innerText = `LEVEL ${state.game.level}: ${levels[state.game.level].name}`;
+	levelNode.innerText = `LEVEL ${state.game.level+1}: ${
+		levels[state.game.level].name
+	}`;
 	scoreNode.style.display = "block";
 	scoreNode.style.opacity = 0.85;
-
-	scoreNode.innerText = `SCORE: ${state.game.score}`;
+    console.log(state.game)
+	scoreNode.innerText = `SCORE: ${
+		state.game.totalScore + state.game.lvlScore
+	}`;
 }
-
-renderScoreHud();
 
 
 //////////////////
@@ -240,6 +221,7 @@ const tutorialNodePause = $(".menu--tutorial-pause");
 const highScoreMainNode = $(".high-score-lbl--main");
 const finalScoreLblNode = $(".final-score-lbl");
 const highScoreLblNode = $(".high-score-lbl");
+const levelScoreLblNode = $(".level-score-lbl");
 
 function showMenu(node) {
 	node.classList.add("active");
@@ -255,7 +237,7 @@ function renderMenus() {
 	hideMenu(menuOverNode);
 	hideMenu(menuNextNode);
 	hideMenu(tutorialNodeMain);
-    hideMenu(tutorialNodePause);
+	hideMenu(tutorialNodePause);
 
 	switch (state.menus.active) {
 		case MENU_MAIN:
@@ -266,7 +248,7 @@ function renderMenus() {
 			showMenu(menuPauseNode);
 			break;
 		case MENU_OVER:
-			finalScoreLblNode.textContent = formatNumber(state.game.score);
+			finalScoreLblNode.textContent = formatNumber(state.game.totalScore);
 			if (isNewHighScore()) {
 				highScoreLblNode.textContent = "New High Score!";
 			} else {
@@ -277,14 +259,15 @@ function renderMenus() {
 			showMenu(menuOverNode);
 			break;
 		case MENU_NEXT:
+            levelScoreLblNode.innerText = formatNumber(state.game.totalScore)
 			showMenu(menuNextNode);
 			break;
 		case MENU_TUTORIAL_MAIN:
 			showMenu(tutorialNodeMain);
 			break;
-        case MENU_TUTORIAL_PAUSE:
-            showMenu(tutorialNodePause);
-            break;
+		case MENU_TUTORIAL_PAUSE:
+			showMenu(tutorialNodePause);
+			break;
 	}
 
 	setHudVisibility(!isMenuVisible());
@@ -300,19 +283,24 @@ renderMenus();
 ////////////////////
 // Button Actions //
 ////////////////////
-
-// Main Menu
-handleClick($(".start-btn"), () => {
+const startGameLvl1 = () => {
+    clearInterval(intervalId)
+	resetGame();
 	setLevel(0);
 	setActiveMenu(null);
-	resetGame();
-});
+};
 
-handleClick($(".cont-btn"), () => {
+const startLvl = () => {
+    clearInterval(intervalId)
 	setLevel(getLocalStorage(curLvlKey));
+    setTotalScore(getLocalStorage(curScoreKey))
 	setActiveMenu(null);
-	resetGame();
-});
+}
+
+// Main Menu
+handleClick($(".start-btn"), startGameLvl1);
+
+handleClick($(".cont-btn"), startLvl);
 
 handleClick($(".tutorial-btn--main"), () => {
 	setActiveMenu(MENU_TUTORIAL_MAIN);
@@ -320,34 +308,29 @@ handleClick($(".tutorial-btn--main"), () => {
 
 // Pause Menu
 handleClick($(".resume-btn"), () => resumeGame());
-handleClick($(".restart-btn"), () => {
-    setLevel(0);
-	setActiveMenu(null);
-	resetGame();
-})
+handleClick($(".restart-btn"), startGameLvl1);
 handleClick($(".menu-btn--pause"), () => setActiveMenu(MENU_MAIN));
-handleClick($(".tutorial-btn--pause"), () => {
-	setActiveMenu(MENU_TUTORIAL_PAUSE);
-});
+handleClick($(".tutorial-btn--pause"), () =>
+	setActiveMenu(MENU_TUTORIAL_PAUSE)
+);
 
 // Game Over Menu
-handleClick($(".play-again-btn"), () => {
-	setActiveMenu(null);
-	resetGame();
-});
+handleClick($(".play-again-btn"), startGameLvl1);
 handleClick($(".menu-btn--over"), () => setActiveMenu(MENU_MAIN));
 
 // Next Level Menu
-
+handleClick($(".next-level-btn"), startLvl)
+handleClick($(".menu-btn--next"), () => setActiveMenu(MENU_MAIN));
 
 // Tutorial
 handleClick($(".close-tutorial-btn--main"), () => {
-    setActiveMenu(MENU_MAIN)
-})
-
+	setActiveMenu(MENU_MAIN);
+});
 handleClick($(".close-tutorial-btn--pause"), () => {
-    setActiveMenu(MENU_PAUSE)
-})
+	setActiveMenu(MENU_PAUSE);
+});
+
+
 
 // actions.js
 // ============================================================================
@@ -366,44 +349,44 @@ function setActiveMenu(menu) {
 // HUD ACTIONS //
 /////////////////
 
-function setScore(score) {
-	state.game.score = score;
+function setLvlScore(score) {
+    state.game.lvlScore = score;
 	renderScoreHud();
 }
 
-function incrementScore(inc) {
+function setTotalScore(score) {
+    state.game.totalScore = score;
+	renderScoreHud();
+}
+
+function changeScore(delta) {
 	if (isInGame()) {
-		state.game.score += inc;
-		if (state.game.score < 0) {
-			state.game.score = 0;
+		state.game.lvlScore += delta;
+		if (state.game.lvlScore < 0) {
+			state.game.lvlScore = 0;
 		}
 		renderScoreHud();
 	}
 }
 
-
-function incrementCubeCount(inc) {
-	if (isInGame()) {
-		state.game.cubeCount += inc;
-		renderScoreHud();
-	}
+function setLevel(level) {
+	state.game.level = level;
 }
 
 //////////////////
 // GAME ACTIONS //
 //////////////////
-
-function setLevel(level) {
-	state.game.level = level;
-}
-
 function resetGame() {
 	state.game.time = 0;
-	setScore(getLocalStorage(curScoreKey));
+    clearInterval(intervalId)
+    setLevel(0)
+	setLvlScore(0);
+    setTotalScore(0);
+    renderScoreHud();
 }
 
 function pauseGame() {
-    clearInterval(intervalId)
+	clearInterval(intervalId);
 	isInGame() && setActiveMenu(MENU_PAUSE);
 }
 
@@ -412,17 +395,195 @@ function resumeGame() {
 }
 
 function endLevel() {
-    handleCanvasPointerUp();
+	$(".final-score-lbl").innerText = state.game.totalScore;
+    $(".duplicates").innerHTML = ""
+    setLevel(state.game.level+1)
+    state.game.correctAns.length = 0
+    clearInterval(intervalId)
+    localStorage.setItem(curLvlKey, state.game.level)
+    localStorage.setItem(curScoreKey, state.game.totalScore)
+    setLvlScore(0)
 	setActiveMenu(MENU_NEXT);
 }
 
 function endGame() {
-	handleCanvasPointerUp();
 	if (isNewHighScore()) {
-		setHighScore(state.game.score);
+		setHighScore(state.game.totalScore);
+        localStorage.clear()
+        localStorage.setItem(highScoreKey, state.game.totalScore)
 	}
+    clearInterval(intervalId)
+    state.game.correctAns.length = 0
+    $(".duplicates").innerHTML = ""
 	setActiveMenu(MENU_OVER);
+    localStorage.setItem(curLvlKey, 0)
+    localStorage.setItem(curLvlScore, 0)
 }
+
+const setViewCanvas = (viewCanvas, molBlock, transform = false) => {
+	if (transform) {
+		viewCanvas.styles.set3DRepresentation("Ball and Stick");
+		viewCanvas.styles.backgroundColor = "black";
+	} else {
+		viewCanvas.styles.bonds_width_2D = 0.6;
+		viewCanvas.styles.bonds_saturationWidthAbs_2D = 2.6;
+		viewCanvas.styles.bonds_hashSpacing_2D = 2.5;
+		viewCanvas.styles.atoms_font_size_2D = 10;
+		viewCanvas.styles.atoms_font_families_2D = [
+			"Helvetica",
+			"Arial",
+			"sans-serif",
+		];
+		viewCanvas.styles.atoms_displayTerminalCarbonLabels_2D = true;
+		// viewCanvas.styles.backgroundColor = 'grey';
+	}
+	let mol = ChemDoodle.readMOL(molBlock, transform ? 1.5 : null);
+	viewCanvas.loadMolecule(mol);
+};
+
+const displayCorrectAns = (molBlock) => {
+	const molLs = $(".duplicates");
+	const span = document.createElement("span");
+	const canvas2d = document.createElement("canvas");
+	const canvas3d = document.createElement("canvas");
+	span.appendChild(canvas2d);
+	span.appendChild(canvas3d);
+	molLs.appendChild(span);
+
+	const canvas2dId = `canvas${state.game.correctAns.length}0`;
+	canvas2d.setAttribute("id", canvas2dId);
+	const viewCanvas2d = new ChemDoodle.ViewerCanvas(canvas2dId, 200, 200);
+	setViewCanvas(viewCanvas2d, molBlock);
+
+	const canvas3dId = `canvas${state.game.correctAns.length}1`;
+	canvas3d.setAttribute("id", canvas3dId);
+	const viewCanvas3d = new ChemDoodle.TransformCanvas3D(canvas3dId, 200, 200);
+	setViewCanvas(viewCanvas3d, molBlock, true);
+};
+
+const getMolBlockStr = (canvas) => {
+	return ChemDoodle.writeMOL(canvas.getMolecule());
+};
+
+const clearCanvas = () => {
+    ChemDoodle.uis.actions.ClearAction(sketcher);
+    sketcher.repaint();
+};
+
+//////////////////
+//      API     //
+//////////////////
+
+async function postData(url = "", data = {}) {
+	await fetch(url, {
+		method: "POST",
+		mode: "cors",
+		cache: "no-cache",
+		credentials: "same-origin",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		referrerPolicy: "no-referrer",
+		body: JSON.stringify(data),
+	});
+
+	return data;
+}
+
+async function getData(url = "") {
+	const response = await fetch(url, {
+		method: "GET",
+		mode: "cors",
+		cache: "no-cache",
+		credentials: "same-origin",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		referrerPolicy: "no-referrer",
+	});
+
+	return response.json();
+}
+
+const checkOneMol = async () => {
+	let correct = false;
+	let notDup = false;
+	const molBlock = getMolBlockStr(sketcher);
+
+	await postData(endPoint + "/game_input", {
+		molBlock: molBlock,
+		level: state.game.level,
+		correctAns: state.game.correctAns,
+	})
+		.then(async (data) => {
+			console.log(data);
+
+			await getData(endPoint + "/single_result").then((response) => {
+				correct = response["correct"];
+				notDup = response["notDup"];
+				state.game.correctAns = response["correctAns"];
+
+				console.log(response);
+
+				if (correct && notDup) {
+                    changeScore(levels[state.game.level].molScore)
+					displayCorrectAns(data["molBlock"]);
+                    clearCanvas();
+					alert(correctMessage);
+				} else if (!notDup) {
+					changeScore(-dupDeduct);
+					alert(dupMessage);
+				} else {
+					changeScore(-incorrectDeduct);
+					alert(wrongMessage);
+				}
+			});
+		})
+		.catch((e) => {
+			console.log(e);
+		});
+};
+
+const checkMolAndLvl = async () => {
+    postData(endPoint + "/game_input", {
+		molBlock: "",
+		level: state.game.level,
+		correctAns: state.game.correctAns,
+	})
+		.then((data) => {
+			console.log(data);
+
+			getData(endPoint + "/level_result").then((response) => {
+				let foundAll = response["foundAll"];
+
+				console.log(response);
+
+				if (foundAll) {
+					clearInterval(intervalId);
+					console.log(state.game.time);
+					// assuming that for every 10 seconds early, add 5 points
+					const timeEarly = levels[state.game.level].maxTime - state.game.time;
+					state.game.lvlScore +=
+						timeEarly > 0 ? (timeEarly % 10) * bonusRate : 0;
+					state.game.totalScore += state.game.lvlScore;
+					clearCanvas();
+
+					if (state.game.level == 7) {
+						endGame();
+					} else {
+						endLevel()
+					}
+				} else alert(levelIncomplete);
+			});
+		})
+		.catch((e) => {
+			console.log(e);
+		});
+}
+
+// Game Buttons
+handleClick($("#check-single"), checkOneMol);
+handleClick($("#check-level"), checkMolAndLvl);
 
 ////////////////////////
 // KEYBOARD SHORTCUTS //
@@ -434,31 +595,4 @@ window.addEventListener("keydown", (event) => {
 	}
 });
 
-// canvas.js
-// ============================================================================
-// ============================================================================
-const setUpCanvas = () => {
-	// Initiate the canvas
-	const options = {
-		useService: true,
-		oneMolecule: true,
-		// isMobile: true,
-	};
 
-	// Set up the ChemDoodle SketcherCanvas component
-	ChemDoodle.ELEMENT["H"].jmolColor = "black";
-	ChemDoodle.ELEMENT["S"].jmolColor = "#B9A130";
-	const sketcher = new ChemDoodle.SketcherCanvas("c", 600, 400, options);
-
-	sketcher.styles.atoms_displayTerminalCarbonLabels_2D = true;
-	sketcher.styles.atoms_useJMOLColors = true;
-	sketcher.styles.bonds_clearOverlaps_2D = true;
-	sketcher.styles.shapes_color = "c10000";
-	sketcher.repaint();
-};
-
-// index.js
-// ============================================================================
-// ============================================================================
-
-setUpCanvas();

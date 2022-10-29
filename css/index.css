@@ -24,6 +24,10 @@ body {
 	visibility: visible;
 }
 
+.game--space {
+	background-color: rgba(255, 255, 255, 0.80);
+}
+
 #c {
 	display: block;
 	touch-action: none;
@@ -42,14 +46,13 @@ body {
 }
 
 .hud__score,
-.pause-btn {
+.pause-btn,
+.timer {
 	position: static;
 	font-size: calc(14px + 2vw + 1vh);
 }
 
 .hud__score {
-	top: 0.65em;
-	left: 0.65em;
 	pointer-events: none;
 	user-select: none;
 }
@@ -175,7 +178,8 @@ h2 {
 	margin: -1em 0.65em 1em;
 }
 
-.final-score-lbl {
+.final-score-lbl,
+.level-score-lbl {
 	font-size: 5rem;
 	margin: -0.2em 0 0;
 }
