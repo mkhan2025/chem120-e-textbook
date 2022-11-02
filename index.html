@@ -69,7 +69,34 @@
 
         <div class="menu menu--tutorial-pause">
             <h1>How to play?</h1>
-            <img src="./js/tutorial.png" />
+            <div class="tutorial">
+                <div class="tutorial-description">
+                    <ol type="a">
+                        <li>Find all the isomers of the given compounds. There are 8
+                            levels, each with a hidden time limit.</li>
+                        <li>Scoring:
+                            <ul  style="line-height: 1; font-weight: normal;">
+                                <li>Earn 60-100 points for each molecules found.</li>
+                                <li>Lose 5 points for each duplicate, and 10 points for an incorrect
+                                    one.</li>
+                                <li>Earn 10 points for every 10 seconds early finishing before the
+                                    time limit.</li>
+                            </ul>
+                        </li>
+                        <li>The score is cummulative from level 1. </li>
+                        <li>The timer will count up from 0 for each level.</li>
+                        <li>The game interface is the white space. Hover over each button on top to see its function.
+                            <ol style="line-height: 1; font-weight: normal;">
+                                <li>To choose different atoms</li>
+                                <li>To clear canvas or delete one bond or atom</li>
+                                <li>To choose different bonds</li>
+                            </ol>
+                        </li>
+                        <li>The found molecules are on the right, both 2D and 3D. Try rotating the 3D :)</li>
+                    </ol>
+                </div>
+                <img class="game-interface" src="./js/tutorial.png" />
+            </div>
             <button type="button" class="button close-tutorial-btn--pause">Close tutorial</button>
         </div>
         <div class="menu menu--tutorial-main">
