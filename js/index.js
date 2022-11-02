@@ -58,6 +58,14 @@ const MENU_NEXT = Symbol("MENU_NEXT");
 const MENU_TUTORIAL_PAUSE = Symbol("MENU_TUTORIAL_PAUSE");
 const MENU_TUTORIAL_MAIN = Symbol("MENU_TUTORIAL_MAIN");
 
+///////////
+// Icons //
+///////////
+const soundOn =
+	"<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' fill='white' viewBox='0 0 16 16'><path d='M11.536 14.01A8.473 8.473 0 0 0 14.026 8a8.473 8.473 0 0 0-2.49-6.01l-.708.707A7.476 7.476 0 0 1 13.025 8c0 2.071-.84 3.946-2.197 5.303l.708.707z'/><path d='M10.121 12.596A6.48 6.48 0 0 0 12.025 8a6.48 6.48 0 0 0-1.904-4.596l-.707.707A5.483 5.483 0 0 1 11.025 8a5.483 5.483 0 0 1-1.61 3.89l.706.706z'/><path d='M8.707 11.182A4.486 4.486 0 0 0 10.025 8a4.486 4.486 0 0 0-1.318-3.182L8 5.525A3.489 3.489 0 0 1 9.025 8 3.49 3.49 0 0 1 8 10.475l.707.707zM6.717 3.55A.5.5 0 0 1 7 4v8a.5.5 0 0 1-.812.39L3.825 10.5H1.5A.5.5 0 0 1 1 10V6a.5.5 0 0 1 .5-.5h2.325l2.363-1.89a.5.5 0 0 1 .529-.06z'/></svg>";
+const soundOff =
+	"<svg xmlns='http://www.w3.org/2000/svg' width='48' height='48' fill='white' class='bi bi-volume-mute-fill' viewBox='0 0 16 16'><path d='M6.717 3.55A.5.5 0 0 1 7 4v8a.5.5 0 0 1-.812.39L3.825 10.5H1.5A.5.5 0 0 1 1 10V6a.5.5 0 0 1 .5-.5h2.325l2.363-1.89a.5.5 0 0 1 .529-.06zm7.137 2.096a.5.5 0 0 1 0 .708L12.207 8l1.647 1.646a.5.5 0 0 1-.708.708L11.5 8.707l-1.646 1.647a.5.5 0 0 1-.708-.708L10.793 8 9.146 6.354a.5.5 0 1 1 .708-.708L11.5 7.293l1.646-1.647a.5.5 0 0 1 .708 0z'/></svg>";
+
 //////////////////
 // Global State //
 //////////////////
@@ -78,6 +86,7 @@ const state = {
 		// Set to `null` to hide all menus
 		active: MENU_MAIN,
 	},
+	sound: true,
 };
 
 ////////////////////////////
@@ -179,9 +188,23 @@ function renderTimeHud() {
 	}, 1000);
 }
 
-const bonusNodeNext = $(".time-bonus--next")
-const bonusNodeOver = $(".time-bonus--over")
-
+const bonusNodeNext = $(".time-bonus--next");
+const bonusNodeOver = $(".time-bonus--over");
+function renderBonusEffect(node) {
+	function pad(value) {
+		return value > 9 ? value : "0" + value;
+	}
+	const bonusIntervalId = setInterval(() => {
+		const seconds = pad(++state.game.time % 60);
+		node.innerText = `0:${pad(
+			parseInt(state.game.time / 60, 10)
+		)}:${seconds}`;
+	}, 200);
+	// while (state.game.time < levels[state.game.level].maxTime) {
+	// 	continue;
+	// }
+	clearInterval(bonusIntervalId);
+}
 
 ///////////
 // Score //
@@ -200,6 +223,16 @@ function renderScoreHud() {
 		state.game.totalScore + state.game.lvlScore
 	}`;
 }
+
+///////////
+// Sound //
+///////////
+const soundBtnNode = $(".sound-control");
+function renderSoundIcon() {
+	soundBtnNode.innerHTML = state.sound ? soundOn : soundOff;
+}
+
+renderSoundIcon();
 
 //////////////////
 // Pause Button //
@@ -287,7 +320,7 @@ renderMenus();
 ////////////////////
 const startGameLvl1 = () => {
 	clearInterval(intervalId);
-	$(".timer").innerText = "0:00:00"
+	$(".timer").innerText = "0:00:00";
 	resetGame();
 	setLevel(0);
 	setActiveMenu(null);
@@ -295,11 +328,20 @@ const startGameLvl1 = () => {
 
 const startLvl = () => {
 	clearInterval(intervalId);
-	$(".timer").innerText = "0:00:00"
+	$(".timer").innerText = "0:00:00";
 	setLevel(getLocalStorage(curLvlKey));
 	setTotalScore(getLocalStorage(curScoreKey));
 	setActiveMenu(null);
 };
+
+// Sound Control
+const soundBtn = $(".sound-control");
+const bgMusicNode = $("#bg-music");
+handleClick(soundBtn, () => {
+	state.sound = !state.sound;
+	bgMusicNode.muted = !bgMusicNode.muted;
+	renderSoundIcon();
+});
 
 // Main Menu
 handleClick($(".start-btn"), startGameLvl1);
@@ -398,17 +440,28 @@ function resumeGame() {
 	isPaused() && setActiveMenu(null);
 }
 
+function setScoreWBonus() {
+	// assuming that for every 10 seconds early, add [bonusRate] points
+	const timeEarly = levels[state.game.level].maxTime - state.game.time;
+	state.game.lvlScore +=
+		timeEarly > 0 ? parseInt(timeEarly / 10, 10) * bonusRate : 0;
+	state.game.totalScore += state.game.lvlScore;
+}
+
 function endLevel() {
-	state.game.time = 0
-	$(".final-score-lbl").innerText = state.game.totalScore;
+	$(".level-score-lbl").innerText = state.game.totalScore;
+	setActiveMenu(MENU_NEXT);
+	const bonusNodeNext = $(".time-bonus--next");
+	renderBonusEffect(bonusNodeNext);
+	setScoreWBonus();
+	state.game.time = 0;
 	setLevel(state.game.level + 1);
 	$(".duplicates").innerHTML = "<h2>You have found these isomers</h2>";
 	clearInterval(intervalId);
-	$(".timer").innerText = "0:00:00"
+	$(".timer").innerText = "0:00:00";
 	localStorage.setItem(curLvlKey, state.game.level);
 	localStorage.setItem(curScoreKey, state.game.totalScore);
 	setLvlScore(0);
-	setActiveMenu(MENU_NEXT);
 }
 
 function endGame() {
@@ -417,9 +470,9 @@ function endGame() {
 		localStorage.clear();
 		localStorage.setItem(highScoreKey, state.game.totalScore);
 	}
-	state.game.time = 0
+	state.game.time = 0;
 	clearInterval(intervalId);
-	$(".timer").innerText = "0:00:00"
+	$(".timer").innerText = "0:00:00";
 	// state.game.correctAns.length = 0
 	$(".duplicates").innerHTML = "<h2>You have found these isomers</h2>";
 	setActiveMenu(MENU_OVER);
@@ -570,14 +623,6 @@ const checkMolAndLvl = async () => {
 
 				if (foundAll) {
 					clearInterval(intervalId);
-					// assuming that for every 10 seconds early, add [bonusRate] points
-					const timeEarly =
-						levels[state.game.level].maxTime - state.game.time;
-					state.game.lvlScore +=
-						timeEarly > 0
-							? parseInt(timeEarly / 10, 10) * bonusRate
-							: 0;
-					state.game.totalScore += state.game.lvlScore;
 					clearCanvas();
 
 					if (state.game.level == 7) {

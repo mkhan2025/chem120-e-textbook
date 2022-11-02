@@ -10,9 +10,11 @@
 </head>
 
 <body>
-    <audio autoplay loop>
+    <audio autoplay loop id="bg-music">
         <source src="./js/bg-music/Track 4 (Easy Peasy).wav" type="audio/mp3" />
     </audio>
+    <button class="sound-control"></button>
+
     <!-- Gameplay HUD -->
     <div class="hud">
         <div class="hud__score">
@@ -75,7 +77,7 @@
                         <li>Find all the isomers of the given compounds. There are 8
                             levels, each with a hidden time limit.</li>
                         <li>Scoring:
-                            <ul  style="line-height: 1; font-weight: normal;">
+                            <ul style="line-height: 1; font-weight: normal;">
                                 <li>Earn 60-100 points for each molecules found.</li>
                                 <li>Lose 5 points for each duplicate, and 10 points for an incorrect
                                     one.</li>
@@ -85,7 +87,8 @@
                         </li>
                         <li>The score is cummulative from level 1. </li>
                         <li>The timer will count up from 0 for each level.</li>
-                        <li>The game interface is the white space. Hover over each button on top to see its function.
+                        <li>The game interface is the white space. Hover over each button on top to see its
+                            function.
                             <ol style="line-height: 1; font-weight: normal;">
                                 <li>To choose different atoms</li>
                                 <li>To clear canvas or delete one bond or atom</li>
@@ -107,7 +110,7 @@
                         <li>Find all the isomers of the given compounds. There are 8
                             levels, each with a hidden time limit.</li>
                         <li>Scoring:
-                            <ul  style="line-height: 1; font-weight: normal;">
+                            <ul style="line-height: 1; font-weight: normal;">
                                 <li>Earn 60-100 points for each molecules found.</li>
                                 <li>Lose 5 points for each duplicate, and 10 points for an incorrect
                                     one.</li>
@@ -117,7 +120,8 @@
                         </li>
                         <li>The score is cummulative from level 1. </li>
                         <li>The timer will count up from 0 for each level.</li>
-                        <li>The game interface is the white space. Hover over each button on top to see its function.
+                        <li>The game interface is the white space. Hover over each button on top to see its
+                            function.
                             <ol style="line-height: 1; font-weight: normal;">
                                 <li>To choose different atoms</li>
                                 <li>To clear canvas or delete one bond or atom</li>
@@ -146,6 +150,7 @@
             <h2>You have found these isomers</h2>
         </div>
     </div>
+
 
 </body>
 <script src="../install/ChemDoodleWeb.js"></script>
