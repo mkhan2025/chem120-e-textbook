@@ -10,6 +10,9 @@
 </head>
 
 <body>
+    <audio autoplay loop>
+        <source src="./js/bg-music/Track 4 (Easy Peasy).wav" type="audio/mp3" />
+    </audio>
     <!-- Gameplay HUD -->
     <div class="hud">
         <div class="hud__score">
@@ -29,8 +32,10 @@
             <h2>Record:</h2>
             <div class="high-score-lbl--main">10</div>
             <button type="button" class="button start-btn">START GAME</button>
-            <button type="button" class="button cont-btn">CONTINUE GAME</button> <!--TODO: replace className-->
-            <button type="button" class="button tutorial-btn--main">HOW TO PLAY?</button> <!--TODO: replace className-->
+            <button type="button" class="button cont-btn">CONTINUE GAME</button>
+            <!--TODO: replace className-->
+            <button type="button" class="button tutorial-btn--main">HOW TO PLAY?</button>
+            <!--TODO: replace className-->
             <div class="credits">A chemistry game for CHEM 120 @ <a href="https://depauw.edu" target="_blank"
                     rel="noreferrer">DePauw University</a></div>
         </div>
@@ -44,7 +49,8 @@
         </div>
 
         <div class="menu menu--over">
-            <h1>Game Over</h1>
+            <h1>Game Completed</h1>
+            <div class="time-bonus--over"></div>
             <h2>Your Score:</h2>
             <div class="final-score-lbl"></div>
             <div class="high-score-lbl"></div>
@@ -54,6 +60,7 @@
 
         <div class="menu menu--next">
             <h1>Level Completed</h1>
+            <div class="time-bonus--next"></div>
             <h2>Your Score:</h2>
             <div class="level-score-lbl"></div>
             <button type="button" class="button next-level-btn">NEXT LEVEL</button>
@@ -62,12 +69,39 @@
 
         <div class="menu menu--tutorial-pause">
             <h1>How to play?</h1>
-            <img src="https://media.4rgos.it/i/Argos/sb-1722-m007-25-01-as490149130?maxW=768&qlt=75&fmt.jpeg.interlaced=true" />
+            <img src="./js/tutorial.png" />
             <button type="button" class="button close-tutorial-btn--pause">Close tutorial</button>
         </div>
         <div class="menu menu--tutorial-main">
             <h1>How to play?</h1>
-            <img src="https://media.4rgos.it/i/Argos/sb-1722-m007-25-01-as490149130?maxW=768&qlt=75&fmt.jpeg.interlaced=true" />
+            <div class="tutorial">
+                <div class="tutorial-description">
+                    <ol type="a">
+                        <li>Find all the isomers of the given compounds. There are 8
+                            levels, each with a hidden time limit.</li>
+                        <li>Scoring:
+                            <ul  style="line-height: 1; font-weight: normal;">
+                                <li>Earn 60-100 points for each molecules found.</li>
+                                <li>Lose 5 points for each duplicate, and 10 points for an incorrect
+                                    one.</li>
+                                <li>Earn 10 points for every 10 seconds early finishing before the
+                                    time limit.</li>
+                            </ul>
+                        </li>
+                        <li>The score is cummulative from level 1. </li>
+                        <li>The timer will count up from 0 for each level.</li>
+                        <li>The game interface is the white space. Hover over each button on top to see its function.
+                            <ol style="line-height: 1; font-weight: normal;">
+                                <li>To choose different atoms</li>
+                                <li>To clear canvas or delete one bond or atom</li>
+                                <li>To choose different bonds</li>
+                            </ol>
+                        </li>
+                        <li>The found molecules are on the right, both 2D and 3D. Try rotating the 3D :)</li>
+                    </ol>
+                </div>
+                <img class="game-interface" src="./js/tutorial.png" />
+            </div>
             <button type="button" class="button close-tutorial-btn--main">Close tutorial</button>
         </div>
     </div>
@@ -76,10 +110,10 @@
     <div class="game">
         <div class="game--space">
             <canvas id="c">Sketcher canvas</canvas>
-        </div>
-        <div class="game--command">
-            <button class="button game-btn" id="check-single">Check molecule</button>
-            <button class="button game-btn" id="check-level">Check level</button>
+            <div class="game--command">
+                <button class="button game-btn" id="check-single">Check molecule</button>
+                <button class="button game-btn" id="check-level">Check level</button>
+            </div>
         </div>
         <div class="duplicates">
             <h2>You have found these isomers</h2>

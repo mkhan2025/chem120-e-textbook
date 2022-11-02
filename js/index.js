@@ -12,7 +12,7 @@ const dupDeduct = 5;
 const incorrectDeduct = 10;
 
 // Game constants
-const  endPoint = "http://127.0.0.1:5000/"
+const endPoint = "http://127.0.0.1:5000/";
 // const endPoint = "https://chem120-game.up.railway.app/";
 const correctMessage = "Correct answer";
 const wrongMessage = "Incorrect answer";
@@ -39,13 +39,12 @@ const getLocalStorage = (key) => {
 	return raw ? parseInt(raw, 10) : 0;
 };
 
-let _lastHighscore = getLocalStorage(highScoreKey);
 const setHighScore = (score) => {
-	_lastHighscore = getLocalStorage(highScoreKey);
 	localStorage.setItem(highScoreKey, String(score));
 };
 
-const isNewHighScore = () => state.game.totalScore > _lastHighscore;
+const isNewHighScore = () =>
+	state.game.totalScore > getLocalStorage(highScoreKey);
 
 ///////////
 // Enums //
@@ -68,9 +67,9 @@ const state = {
 		level: 0,
 		// Run time of current game.
 		time: 0,
-        // List of the correct answers so far
-        correctAns: [],
-        // Score of the current level
+		// List of the correct answers so far
+		correctAns: [],
+		// Score of the current level
 		lvlScore: 0,
 		// Score of all level
 		totalScore: 0,
@@ -110,7 +109,7 @@ const setUpCanvas = () => {
 	sketcher.styles.bonds_clearOverlaps_2D = true;
 	sketcher.styles.shapes_color = "c10000";
 	sketcher.repaint();
-    return sketcher
+	return sketcher;
 };
 
 // index.js
@@ -180,6 +179,10 @@ function renderTimeHud() {
 	}, 1000);
 }
 
+const bonusNodeNext = $(".time-bonus--next")
+const bonusNodeOver = $(".time-bonus--over")
+
+
 ///////////
 // Score //
 ///////////
@@ -187,17 +190,16 @@ const levelNode = $(".level");
 const scoreNode = $(".level-score");
 
 function renderScoreHud() {
-	levelNode.innerText = `LEVEL ${state.game.level+1}: ${
+	levelNode.innerText = `LEVEL ${state.game.level + 1}: ${
 		levels[state.game.level].name
 	}`;
 	scoreNode.style.display = "block";
 	scoreNode.style.opacity = 0.85;
-    console.log(state.game)
+	console.log(state.game);
 	scoreNode.innerText = `SCORE: ${
 		state.game.totalScore + state.game.lvlScore
 	}`;
 }
-
 
 //////////////////
 // Pause Button //
@@ -259,7 +261,7 @@ function renderMenus() {
 			showMenu(menuOverNode);
 			break;
 		case MENU_NEXT:
-            levelScoreLblNode.innerText = formatNumber(state.game.totalScore)
+			levelScoreLblNode.innerText = formatNumber(state.game.totalScore);
 			showMenu(menuNextNode);
 			break;
 		case MENU_TUTORIAL_MAIN:
@@ -284,18 +286,20 @@ renderMenus();
 // Button Actions //
 ////////////////////
 const startGameLvl1 = () => {
-    clearInterval(intervalId)
+	clearInterval(intervalId);
+	$(".timer").innerText = "0:00:00"
 	resetGame();
 	setLevel(0);
 	setActiveMenu(null);
 };
 
 const startLvl = () => {
-    clearInterval(intervalId)
+	clearInterval(intervalId);
+	$(".timer").innerText = "0:00:00"
 	setLevel(getLocalStorage(curLvlKey));
-    setTotalScore(getLocalStorage(curScoreKey))
+	setTotalScore(getLocalStorage(curScoreKey));
 	setActiveMenu(null);
-}
+};
 
 // Main Menu
 handleClick($(".start-btn"), startGameLvl1);
@@ -319,7 +323,7 @@ handleClick($(".play-again-btn"), startGameLvl1);
 handleClick($(".menu-btn--over"), () => setActiveMenu(MENU_MAIN));
 
 // Next Level Menu
-handleClick($(".next-level-btn"), startLvl)
+handleClick($(".next-level-btn"), startLvl);
 handleClick($(".menu-btn--next"), () => setActiveMenu(MENU_MAIN));
 
 // Tutorial
@@ -329,8 +333,6 @@ handleClick($(".close-tutorial-btn--main"), () => {
 handleClick($(".close-tutorial-btn--pause"), () => {
 	setActiveMenu(MENU_PAUSE);
 });
-
-
 
 // actions.js
 // ============================================================================
@@ -350,12 +352,12 @@ function setActiveMenu(menu) {
 /////////////////
 
 function setLvlScore(score) {
-    state.game.lvlScore = score;
+	state.game.lvlScore = score;
 	renderScoreHud();
 }
 
 function setTotalScore(score) {
-    state.game.totalScore = score;
+	state.game.totalScore = score;
 	renderScoreHud();
 }
 
@@ -378,11 +380,13 @@ function setLevel(level) {
 //////////////////
 function resetGame() {
 	state.game.time = 0;
-    clearInterval(intervalId)
-    setLevel(0)
+	state.game.correctAns.length = 0;
+	clearInterval(intervalId);
+	setLevel(0);
 	setLvlScore(0);
-    setTotalScore(0);
-    renderScoreHud();
+	setTotalScore(0);
+	renderScoreHud();
+	$(".duplicates").innerHTML = "<h2>You have found these isomers</h2>";
 }
 
 function pauseGame() {
@@ -395,29 +399,32 @@ function resumeGame() {
 }
 
 function endLevel() {
+	state.game.time = 0
 	$(".final-score-lbl").innerText = state.game.totalScore;
-    $(".duplicates").innerHTML = ""
-    setLevel(state.game.level+1)
-    state.game.correctAns.length = 0
-    clearInterval(intervalId)
-    localStorage.setItem(curLvlKey, state.game.level)
-    localStorage.setItem(curScoreKey, state.game.totalScore)
-    setLvlScore(0)
+	setLevel(state.game.level + 1);
+	$(".duplicates").innerHTML = "<h2>You have found these isomers</h2>";
+	clearInterval(intervalId);
+	$(".timer").innerText = "0:00:00"
+	localStorage.setItem(curLvlKey, state.game.level);
+	localStorage.setItem(curScoreKey, state.game.totalScore);
+	setLvlScore(0);
 	setActiveMenu(MENU_NEXT);
 }
 
 function endGame() {
 	if (isNewHighScore()) {
 		setHighScore(state.game.totalScore);
-        localStorage.clear()
-        localStorage.setItem(highScoreKey, state.game.totalScore)
+		localStorage.clear();
+		localStorage.setItem(highScoreKey, state.game.totalScore);
 	}
-    clearInterval(intervalId)
-    state.game.correctAns.length = 0
-    $(".duplicates").innerHTML = ""
+	state.game.time = 0
+	clearInterval(intervalId);
+	$(".timer").innerText = "0:00:00"
+	// state.game.correctAns.length = 0
+	$(".duplicates").innerHTML = "<h2>You have found these isomers</h2>";
 	setActiveMenu(MENU_OVER);
-    localStorage.setItem(curLvlKey, 0)
-    localStorage.setItem(curLvlScore, 0)
+	localStorage.setItem(curLvlKey, 0);
+	localStorage.setItem(curLvlScore, 0);
 }
 
 const setViewCanvas = (viewCanvas, molBlock, transform = false) => {
@@ -448,16 +455,17 @@ const displayCorrectAns = (molBlock) => {
 	const canvas3d = document.createElement("canvas");
 	span.appendChild(canvas2d);
 	span.appendChild(canvas3d);
+	span.style.display = "inline-block";
 	molLs.appendChild(span);
 
 	const canvas2dId = `canvas${state.game.correctAns.length}0`;
 	canvas2d.setAttribute("id", canvas2dId);
-	const viewCanvas2d = new ChemDoodle.ViewerCanvas(canvas2dId, 200, 200);
+	const viewCanvas2d = new ChemDoodle.ViewerCanvas(canvas2dId, 150, 150);
 	setViewCanvas(viewCanvas2d, molBlock);
 
 	const canvas3dId = `canvas${state.game.correctAns.length}1`;
 	canvas3d.setAttribute("id", canvas3dId);
-	const viewCanvas3d = new ChemDoodle.TransformCanvas3D(canvas3dId, 200, 200);
+	const viewCanvas3d = new ChemDoodle.TransformCanvas3D(canvas3dId, 150, 150);
 	setViewCanvas(viewCanvas3d, molBlock, true);
 };
 
@@ -466,8 +474,8 @@ const getMolBlockStr = (canvas) => {
 };
 
 const clearCanvas = () => {
-    ChemDoodle.uis.actions.ClearAction(sketcher);
-    sketcher.repaint();
+	ChemDoodle.uis.actions.ClearAction(sketcher);
+	sketcher.repaint();
 };
 
 //////////////////
@@ -526,9 +534,9 @@ const checkOneMol = async () => {
 				console.log(response);
 
 				if (correct && notDup) {
-                    changeScore(levels[state.game.level].molScore)
+					changeScore(levels[state.game.level].molScore);
 					displayCorrectAns(data["molBlock"]);
-                    clearCanvas();
+					clearCanvas();
 					alert(correctMessage);
 				} else if (!notDup) {
 					changeScore(-dupDeduct);
@@ -545,8 +553,10 @@ const checkOneMol = async () => {
 };
 
 const checkMolAndLvl = async () => {
-    postData(endPoint + "/game_input", {
-		molBlock: "",
+	const molBlock = getMolBlockStr(sketcher);
+
+	postData(endPoint + "/game_input", {
+		molBlock: molBlock,
 		level: state.game.level,
 		correctAns: state.game.correctAns,
 	})
@@ -560,18 +570,20 @@ const checkMolAndLvl = async () => {
 
 				if (foundAll) {
 					clearInterval(intervalId);
-					console.log(state.game.time);
-					// assuming that for every 10 seconds early, add 5 points
-					const timeEarly = levels[state.game.level].maxTime - state.game.time;
+					// assuming that for every 10 seconds early, add [bonusRate] points
+					const timeEarly =
+						levels[state.game.level].maxTime - state.game.time;
 					state.game.lvlScore +=
-						timeEarly > 0 ? (timeEarly % 10) * bonusRate : 0;
+						timeEarly > 0
+							? parseInt(timeEarly / 10, 10) * bonusRate
+							: 0;
 					state.game.totalScore += state.game.lvlScore;
 					clearCanvas();
 
 					if (state.game.level == 7) {
 						endGame();
 					} else {
-						endLevel()
+						endLevel();
 					}
 				} else alert(levelIncomplete);
 			});
@@ -579,7 +591,7 @@ const checkMolAndLvl = async () => {
 		.catch((e) => {
 			console.log(e);
 		});
-}
+};
 
 // Game Buttons
 handleClick($("#check-single"), checkOneMol);
@@ -594,5 +606,3 @@ window.addEventListener("keydown", (event) => {
 		isPaused() ? resumeGame() : pauseGame();
 	}
 });
-
-

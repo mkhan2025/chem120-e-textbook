@@ -15,10 +15,17 @@ body {
 	color: rgba(255, 255, 255, 0.75);
 }
 
+
+/*//////////////////////
+//        GAME        //
+//////////////////////*/
+
 .game {
 	visibility: hidden;
 	display:flex;
-	justify-content: space-between;
+	justify-content: left;
+	gap: 10vh;
+	margin: 5vh 5vh;
 }
 .game.active {
 	visibility: visible;
@@ -26,6 +33,13 @@ body {
 
 .game--space {
 	background-color: rgba(255, 255, 255, 0.80);
+	margin: 0.8em 0.6em;
+}
+
+.game--command {
+	max-width: 20%;
+	display: flex;
+	padding: 0.8em 0.6em;
 }
 
 #c {
@@ -34,6 +48,14 @@ body {
 	transform: translateZ(0);
 }
 
+.duplicates > h2 {
+	margin: 0.8em 0.6em;
+	text-align: left;
+}
+
+.duplicates > span{
+	margin: 10px 5px;
+}
 
 
 /*/////////////////////
@@ -41,6 +63,7 @@ body {
 /////////////////////*/
 
 .hud {
+	margin-top: 10px;
 	display: flex;
 	justify-content: space-between;
 }
@@ -48,24 +71,22 @@ body {
 .hud__score,
 .pause-btn,
 .timer {
-	position: static;
-	font-size: calc(14px + 2vw + 1vh);
+	font-size: calc(5px + 2vw + 1vh);
 }
 
-.hud__score {
+.hud__score,
+.timer {
 	pointer-events: none;
 	user-select: none;
+	padding: 0.4em 0.3em;
 }
 
-.cube-count-lbl {
-	font-size: 0.46em;
-}
 
 .pause-btn {
 	position: static;
 	display: flex;
 	justify-content: end;
-	padding: 0.8em 0.65em;
+	padding: 0.4em 0.3em;
 }
 
 .pause-btn > div {
@@ -178,6 +199,10 @@ h2 {
 	margin: -1em 0.65em 1em;
 }
 
+audio {
+	display: none;
+}
+
 .final-score-lbl,
 .level-score-lbl {
 	font-size: 5rem;
@@ -224,6 +249,11 @@ h2 {
 	transition: opacity 0.3s, transform 0.3s;
 }
 
+.game-btn {
+	font-size: 1rem;
+	color: #000;
+}
+
 /* No `:focus` styles because this is a mouse/touch game! */
 .button:active {
 	opacity: 1;
@@ -243,6 +273,39 @@ h2 {
 
 a {
 	color: white;
+}
+
+/* Tutorial page */
+menu--tutorial-pause,
+menu--tutorial-main {
+	position: static;
+}
+
+.tutorial {
+	display: flex;
+	justify-content: space-evenly;
+	width: 100vw;
+	margin-bottom: 3%;
+}
+
+.tutorial-description {
+	background-color: rgba(255, 255, 255, 0.90);
+	color:#000;
+	padding: 1em 2em;
+	text-align: justify;
+	font-size: 1rem;
+	max-width: 55%;
+	line-height: 1.5;
+	border-radius: 15px;
+}
+
+.game-interface {
+	aspect-ratio: 1249/887;
+	max-width: 40%;
+	height: auto;
+	border: solid;
+	border-color: #fff;
+	border-radius: 15px;
 }
 
 /* Only enable hover state on large screens */
