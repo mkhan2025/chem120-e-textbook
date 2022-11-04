@@ -190,20 +190,23 @@ function renderTimeHud() {
 
 const bonusNodeNext = $(".time-bonus--next");
 const bonusNodeOver = $(".time-bonus--over");
-function renderBonusEffect(node) {
+var bonusIntervalId;
+function renderBonusEffect(timeNode, totalScoreNode) {
 	function pad(value) {
 		return value > 9 ? value : "0" + value;
 	}
-	const bonusIntervalId = setInterval(() => {
-		const seconds = pad(++state.game.time % 60);
-		node.innerText = `0:${pad(
-			parseInt(state.game.time / 60, 10)
-		)}:${seconds}`;
-	}, 200);
-	// while (state.game.time < levels[state.game.level].maxTime) {
-	// 	continue;
-	// }
-	clearInterval(bonusIntervalId);
+	const countingUpRate = 5;
+	bonusIntervalId = setInterval(() => {
+		if (state.game.time < levels[state.game.level].maxTime) {
+			const seconds = pad(++state.game.time % 60);
+			timeNode.innerText = `0:${pad(
+				parseInt(state.game.time / 60, 10)
+			)}:${seconds}`;
+		} else {
+			totalScoreNode.innerText = formatNumber(state.game.totalScore);
+			clearInterval(bonusIntervalId);
+		}
+	}, countingUpRate);
 }
 
 ///////////
@@ -294,8 +297,8 @@ function renderMenus() {
 			showMenu(menuOverNode);
 			break;
 		case MENU_NEXT:
-			levelScoreLblNode.innerText = formatNumber(state.game.totalScore);
 			showMenu(menuNextNode);
+			renderBonusEffect(bonusNodeNext, levelScoreLblNode);
 			break;
 		case MENU_TUTORIAL_MAIN:
 			showMenu(tutorialNodeMain);
@@ -440,25 +443,15 @@ function resumeGame() {
 	isPaused() && setActiveMenu(null);
 }
 
-function setScoreWBonus() {
-	// assuming that for every 10 seconds early, add [bonusRate] points
-	const timeEarly = levels[state.game.level].maxTime - state.game.time;
-	state.game.lvlScore +=
-		timeEarly > 0 ? parseInt(timeEarly / 10, 10) * bonusRate : 0;
-	state.game.totalScore += state.game.lvlScore;
-}
-
 function endLevel() {
-	$(".level-score-lbl").innerText = state.game.totalScore;
+	$(".level-score-lbl").innerText = formatNumber(state.game.lvlScore);
 	setActiveMenu(MENU_NEXT);
-	const bonusNodeNext = $(".time-bonus--next");
-	renderBonusEffect(bonusNodeNext);
-	setScoreWBonus();
 	state.game.time = 0;
 	setLevel(state.game.level + 1);
 	$(".duplicates").innerHTML = "<h2>You have found these isomers</h2>";
 	clearInterval(intervalId);
 	$(".timer").innerText = "0:00:00";
+	state.game.correctAns.length = 0;
 	localStorage.setItem(curLvlKey, state.game.level);
 	localStorage.setItem(curScoreKey, state.game.totalScore);
 	setLvlScore(0);
@@ -473,7 +466,7 @@ function endGame() {
 	state.game.time = 0;
 	clearInterval(intervalId);
 	$(".timer").innerText = "0:00:00";
-	// state.game.correctAns.length = 0
+	state.game.correctAns.length = 0;
 	$(".duplicates").innerHTML = "<h2>You have found these isomers</h2>";
 	setActiveMenu(MENU_OVER);
 	localStorage.setItem(curLvlKey, 0);
@@ -618,8 +611,21 @@ const checkMolAndLvl = async () => {
 
 			getData(endPoint + "/level_result").then((response) => {
 				let foundAll = response["foundAll"];
+				let notDup = response["notDup"];
+				let correct = response["correct"];
 
 				console.log(response);
+				if (correct && notDup)
+					changeScore(levels[state.game.level].molScore);
+
+				// assuming that for every 10 seconds early, add [bonusRate] points
+				const timeEarly =
+					levels[state.game.level].maxTime - state.game.time;
+				state.game.totalScore +=
+					state.game.lvlScore +
+					(timeEarly > 0
+						? parseInt(timeEarly / 10, 10) * bonusRate
+						: 0);
 
 				if (foundAll) {
 					clearInterval(intervalId);

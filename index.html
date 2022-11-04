@@ -10,10 +10,23 @@
 </head>
 
 <body>
+    <!-- Audio -->
     <audio autoplay loop id="bg-music">
         <source src="./js/bg-music/Track 4 (Easy Peasy).wav" type="audio/mp3" />
     </audio>
     <button class="sound-control"></button>
+    <!-- <audio autoplay muted id="correct-audio">
+        <source src="./js/bg-music/correctAns.mp3" type="audio/mp3" />
+    </audio>
+    <audio autoplay muted id="wrong-audio">
+        <source src="./js/bg-music/wrongDupAns.mp3" type="audio/mp3" />
+    </audio>
+    <audio autoplay muted loop id="counting-bonus-audio">
+        <source src="./js/bg-music/rackingUpBonus.mp3" type="audio/mp3" />
+    </audio>
+    <audio autoplay muted id="bonus-audio">
+        <source src="./js/bg-music/bonusPoint.mp3" type="audio/mp3" />
+    </audio> -->
 
     <!-- Gameplay HUD -->
     <div class="hud">
@@ -35,9 +48,9 @@
             <div class="high-score-lbl--main">10</div>
             <button type="button" class="button start-btn">START GAME</button>
             <button type="button" class="button cont-btn">CONTINUE GAME</button>
-            <!--TODO: replace className-->
+            
             <button type="button" class="button tutorial-btn--main">HOW TO PLAY?</button>
-            <!--TODO: replace className-->
+            
             <div class="credits">A chemistry game for CHEM 120 @ <a href="https://depauw.edu" target="_blank"
                     rel="noreferrer">DePauw University</a></div>
         </div>
@@ -52,7 +65,7 @@
 
         <div class="menu menu--over">
             <h1>Game Completed</h1>
-            <div class="time-bonus--over"></div>
+            <h1 class="time-bonus--over"></h1>
             <h2>Your Score:</h2>
             <div class="final-score-lbl"></div>
             <div class="high-score-lbl"></div>
@@ -62,7 +75,7 @@
 
         <div class="menu menu--next">
             <h1>Level Completed</h1>
-            <div class="time-bonus--next"></div>
+            <h1 class="time-bonus--next"></h1>
             <h2>Your Score:</h2>
             <div class="level-score-lbl"></div>
             <button type="button" class="button next-level-btn">NEXT LEVEL</button>
@@ -153,8 +166,8 @@
 
 
 </body>
-<script src="../install/ChemDoodleWeb.js"></script>
-<script src="../install/uis/ChemDoodleWeb-uis.js"></script>
-<script src="../js/index.js" type="module"></script>
+<script src="./install/ChemDoodleWeb.js"></script>
+<script src="./install/uis/ChemDoodleWeb-uis.js"></script>
+<script src="./js/index.js" type="module"></script>
 
 </html>
