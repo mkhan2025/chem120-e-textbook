@@ -5,50 +5,169 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://assets.ubuntu.com/v1/vanilla-framework-version-3.8.0.min.css" />
-    <title>Chem 120</title>
+    <link href="../css/index.css" rel="stylesheet">
+    <title>Document</title>
 </head>
 
 <body>
-    <nav class="nav-bar">
-        <a class="" href="/">Home</a>
-        <a class="" href="./pages/game.html">Game</a>
-    </nav>
-    <div>
-        <h1>Welcome to the game...</h1>
-        <div>
-            <h3>What is this game?</h3>
-            <p>
-                This is a game Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
-                ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-                nisi ut aliquip ex ea commodo consequat. 
-            </p>
+    <!-- Audio -->
+    <audio autoplay loop id="bg-music">
+        <source src="./js/bg-music/Track 4 (Easy Peasy).wav" type="audio/mp3" />
+    </audio>
+    <button class="sound-control"></button>
+    <!-- <audio autoplay muted id="correct-audio">
+        <source src="./js/bg-music/correctAns.mp3" type="audio/mp3" />
+    </audio>
+    <audio autoplay muted id="wrong-audio">
+        <source src="./js/bg-music/wrongDupAns.mp3" type="audio/mp3" />
+    </audio>
+    <audio autoplay muted loop id="counting-bonus-audio">
+        <source src="./js/bg-music/rackingUpBonus.mp3" type="audio/mp3" />
+    </audio>
+    <audio autoplay muted id="bonus-audio">
+        <source src="./js/bg-music/bonusPoint.mp3" type="audio/mp3" />
+    </audio> -->
+
+    <!-- Gameplay HUD -->
+    <div class="hud">
+        <div class="hud__score">
+            <div class="level"></div>
+            <div class="level-score"></div>
         </div>
-        <div>
-            <h3>All time stats</h3>
-            <p id="highest-score">Your highest score: 0</p>
-        </div>
-        <div>
-            <a href="./pages/game.html">
-                <button>Let's Play!</button>
-            </a>
+        <div class="timer">0:00:00</div>
+        <div class="pause-btn">
+            <div></div>
         </div>
     </div>
-    <footer>
-        <h4>If you have any questions, please contact Professor Jeff Hansen</h4>
-        <span>
-            <i class="p-icon--email">Email</i>
-            <a href="mailto:jhansen@depauw.edu">jhansen@depauw.edu</a>
-        </span>
-        <span>
-            <i class="">Phone</i>
-            <a href="tel:7656584613">765-658-4613</a>
-        </span>
-        <span>
-            <i>Office</i>
-            <a href="https://www.google.com/maps/place/The+Percy+L.+Julian+Science+and+Mathematics+Center/@39.6387534,-86.8647362,17z/data=!3m1!4b1!4m5!3m4!1s0x886cdfb2ce6467d1:0xf1cf2ee439805536!8m2!3d39.6387493!4d-86.8625475">Julian Science and Mathematics Center, Rm 360</a>
-        </span>
-    </footer>
+
+    <!-- Menu System -->
+    <div class="menus">
+        <div class="menu menu--main">
+            <h1>FIND THEM ALL</h1>
+            <h2>Record:</h2>
+            <div class="high-score-lbl--main">10</div>
+            <button type="button" class="button start-btn">START GAME</button>
+            <button type="button" class="button cont-btn">CONTINUE GAME</button>
+            
+            <button type="button" class="button tutorial-btn--main">HOW TO PLAY?</button>
+            
+            <div class="credits">A chemistry game for CHEM 120 @ <a href="https://depauw.edu" target="_blank"
+                    rel="noreferrer">DePauw University</a></div>
+        </div>
+
+        <div class="menu menu--pause">
+            <h1>Paused</h1>
+            <button type="button" class="button resume-btn">RESUME GAME</button>
+            <button type="button" class="button restart-btn">RESTART GAME</button>
+            <button type="button" class="button tutorial-btn--pause">HOW TO PLAY?</button>
+            <button type="button" class="button menu-btn--pause">MAIN MENU</button>
+        </div>
+
+        <div class="menu menu--over">
+            <h1>Game Completed</h1>
+            <h1 class="time-bonus--over"></h1>
+            <h2>Your Score:</h2>
+            <div class="final-score-lbl"></div>
+            <div class="high-score-lbl"></div>
+            <button type="button" class="button play-again-btn">PLAY AGAIN</button>
+            <button type="button" class="button menu-btn--over">MAIN MENU</button>
+        </div>
+
+        <div class="menu menu--next">
+            <h1>Level Completed</h1>
+            <h1 class="time-bonus--next"></h1>
+            <h2>Your Score:</h2>
+            <div class="level-score-lbl"></div>
+            <button type="button" class="button next-level-btn">NEXT LEVEL</button>
+            <button type="button" class="button menu-btn--next">MAIN MENU</button>
+        </div>
+
+        <div class="menu menu--tutorial-pause">
+            <h1>How to play?</h1>
+            <div class="tutorial">
+                <div class="tutorial-description">
+                    <ol type="a">
+                        <li>Find all the isomers of the given compounds. There are 8
+                            levels, each with a hidden time limit.</li>
+                        <li>Scoring:
+                            <ul style="line-height: 1; font-weight: normal;">
+                                <li>Earn 60-100 points for each molecules found.</li>
+                                <li>Lose 5 points for each duplicate, and 10 points for an incorrect
+                                    one.</li>
+                                <li>Earn 10 points for every 10 seconds early finishing before the
+                                    time limit.</li>
+                            </ul>
+                        </li>
+                        <li>The score is cummulative from level 1. </li>
+                        <li>The timer will count up from 0 for each level.</li>
+                        <li>The game interface is the white space. Hover over each button on top to see its
+                            function.
+                            <ol style="line-height: 1; font-weight: normal;">
+                                <li>To choose different atoms</li>
+                                <li>To clear canvas or delete one bond or atom</li>
+                                <li>To choose different bonds</li>
+                            </ol>
+                        </li>
+                        <li>The found molecules are on the right, both 2D and 3D. Try rotating the 3D :)</li>
+                    </ol>
+                </div>
+                <img class="game-interface" src="./js/tutorial.png" />
+            </div>
+            <button type="button" class="button close-tutorial-btn--pause">Close tutorial</button>
+        </div>
+        <div class="menu menu--tutorial-main">
+            <h1>How to play?</h1>
+            <div class="tutorial">
+                <div class="tutorial-description">
+                    <ol type="a">
+                        <li>Find all the isomers of the given compounds. There are 8
+                            levels, each with a hidden time limit.</li>
+                        <li>Scoring:
+                            <ul style="line-height: 1; font-weight: normal;">
+                                <li>Earn 60-100 points for each molecules found.</li>
+                                <li>Lose 5 points for each duplicate, and 10 points for an incorrect
+                                    one.</li>
+                                <li>Earn 10 points for every 10 seconds early finishing before the
+                                    time limit.</li>
+                            </ul>
+                        </li>
+                        <li>The score is cummulative from level 1. </li>
+                        <li>The timer will count up from 0 for each level.</li>
+                        <li>The game interface is the white space. Hover over each button on top to see its
+                            function.
+                            <ol style="line-height: 1; font-weight: normal;">
+                                <li>To choose different atoms</li>
+                                <li>To clear canvas or delete one bond or atom</li>
+                                <li>To choose different bonds</li>
+                            </ol>
+                        </li>
+                        <li>The found molecules are on the right, both 2D and 3D. Try rotating the 3D :)</li>
+                    </ol>
+                </div>
+                <img class="game-interface" src="./js/tutorial.png" />
+            </div>
+            <button type="button" class="button close-tutorial-btn--main">Close tutorial</button>
+        </div>
+    </div>
+
+    <!-- Game canvas -->
+    <div class="game">
+        <div class="game--space">
+            <canvas id="c">Sketcher canvas</canvas>
+            <div class="game--command">
+                <button class="button game-btn" id="check-single">Check molecule</button>
+                <button class="button game-btn" id="check-level">Check level</button>
+            </div>
+        </div>
+        <div class="duplicates">
+            <h2>You have found these isomers</h2>
+        </div>
+    </div>
+
+
 </body>
+<script src="./install/ChemDoodleWeb.js"></script>
+<script src="./install/uis/ChemDoodleWeb-uis.js"></script>
+<script src="./js/index.js" type="module"></script>
 
 </html>
