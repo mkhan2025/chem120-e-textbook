@@ -12,8 +12,8 @@ const dupDeduct = 5;
 const incorrectDeduct = 10;
 
 // Game constants
-const endPoint = "http://127.0.0.1:5000/";
-// const endPoint = "https://chem120-game.up.railway.app/";
+// const endPoint = "http://127.0.0.1:5000/";
+const endPoint = "https://chem120-game.up.railway.app/";
 const correctMessage = "Correct answer";
 const wrongMessage = "Incorrect answer";
 const dupMessage = "Duplicated answer";
