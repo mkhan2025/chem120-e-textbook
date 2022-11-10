@@ -205,6 +205,15 @@ function renderBonusEffect(timeNode, totalScoreNode) {
 			)}:${seconds}`;
 		} else {
 			totalScoreNode.innerText = formatNumber(state.game.totalScore);
+			if (isNewHighScore()) {
+				highScoreLblNode.textContent = "New High Score!";
+				setHighScore(state.game.totalScore);
+				localStorage.setItem(highScoreKey, state.game.totalScore);
+			} else {
+				highScoreLblNode.textContent = `High Score: ${formatNumber(
+					getLocalStorage(highScoreKey)
+				)}`;
+			}
 			clearInterval(bonusIntervalId);
 		}
 	}, countingUpRate);
@@ -287,15 +296,8 @@ function renderMenus() {
 			showMenu(menuPauseNode);
 			break;
 		case MENU_OVER:
-			finalScoreLblNode.textContent = formatNumber(state.game.totalScore);
-			if (isNewHighScore()) {
-				highScoreLblNode.textContent = "New High Score!";
-			} else {
-				highScoreLblNode.textContent = `High Score: ${formatNumber(
-					getLocalStorage(highScoreKey)
-				)}`;
-			}
 			showMenu(menuOverNode);
+			renderBonusEffect(bonusNodeOver, finalScoreLblNode);
 			break;
 		case MENU_NEXT:
 			showMenu(menuNextNode);
@@ -445,7 +447,7 @@ function resumeGame() {
 }
 
 function endLevel() {
-	$(".level-score-lbl").innerText = formatNumber(state.game.lvlScore);
+	levelScoreLblNode.innerText = formatNumber(state.game.lvlScore);
 	setActiveMenu(MENU_NEXT);
 	state.game.time = 0;
 	setLevel(state.game.level + 1);
@@ -459,17 +461,13 @@ function endLevel() {
 }
 
 function endGame() {
-	if (isNewHighScore()) {
-		setHighScore(state.game.totalScore);
-		localStorage.clear();
-		localStorage.setItem(highScoreKey, state.game.totalScore);
-	}
+	$(".final-score-lbl").innerText = formatNumber(state.game.lvlScore);
+	setActiveMenu(MENU_OVER);
 	state.game.time = 0;
 	clearInterval(intervalId);
 	$(".timer").innerText = "0:00:00";
 	state.game.correctAns.length = 0;
 	$(".duplicates").innerHTML = "<h2>You have found these isomers</h2>";
-	setActiveMenu(MENU_OVER);
 	localStorage.setItem(curLvlKey, 0);
 	localStorage.setItem(curLvlScore, 0);
 }
