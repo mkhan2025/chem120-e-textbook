@@ -67,6 +67,49 @@ body {
 	margin: 10px 5px;
 }
 
+.icon {
+	position: absolute;
+	visibility: hidden;
+	z-index: 7;
+	left: 0;
+	right: 0;
+	top: 30%;
+	margin: auto;
+	padding: 20px;
+	border-radius: 100%;
+	background-color: rgba(128, 128, 128, 0.8);
+}
+
+#icon-correct {
+	color: greenyellow;
+}
+
+#icon-duplicate {
+	color: yellow;
+}
+
+#icon-wrong {
+	color: red;
+}
+
+#icon-unfinish {
+	color: magenta;
+}
+
+.alert{
+	position: absolute;
+	visibility: hidden;
+	z-index: 7;
+	left: 0;
+	right: 0;
+	top: 52%;
+	margin: auto;
+	color:rgb(252, 235, 6);
+}
+
+.mol-check.active {
+	visibility: visible;
+}
 
 /*/////////////////////
 //        HUD        //
