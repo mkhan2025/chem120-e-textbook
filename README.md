@@ -40,7 +40,7 @@ Might need to resolve merge conflicts. Follow the instruction on the terminal.
 
         git add .
         git commit -m "<a short description of the changes>"
-        git push origin/<branch_name>
+        git push origin <branch_name>
 
 5. Make a Pull Request (PR) on GitHub.
 
